@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
+import crypto from "crypto";
 
 const prisma = new PrismaClient();
 
-type Etapas = "nome" | "numero" | "data_confirmation" | "service" | "note";
+type Etapas =
+  | "inicio"
+  | "nome"
+  | "numero"
+  | "dia_selection"
+  | "horario_selection"
+  | "data_confirmation"
+  | "service"
+  | "note";
 
 const conversationState: {
   [phone: string]: {
@@ -16,57 +25,117 @@ const conversationState: {
       service?: string;
       note?: string;
       slots?: string[];
+      dias?: string[];
+      horarios?: string[];
+      horariosPorDia?: { [dia: string]: string[] };
     };
   };
 } = {};
 
 const WHATSAPP_URL = `https://graph.facebook.com/v18.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
 
-// Schemas Zod para validação das entradas do usuário
-
-const nomeSchema = z.string().min(2, "Nome muito curto").max(100);
-const escolhaHorarioSchema = z
+// ======= SCHEMAS =======
+const nomeSchema = z
   .string()
-  .regex(/^\d+$/, "Deve ser um número")
-  .transform((val) => parseInt(val, 10));
+  .min(2, { message: "Nome deve ter no mínimo 2 caracteres." })
+  .max(100, { message: "Nome deve ter no máximo 100 caracteres." })
+  .regex(/.*[a-zA-ZÀ-ÿ].*/, {
+    message: "O nome deve conter pelo menos uma letra.",
+  });
+
+const escolhaHorarioSchema = z.string().regex(/^\d+$/).transform(Number);
 const noteSchema = z.string().max(200).optional();
 
-async function getAvailableTimeSlots(daysToCheck = 3) {
-  const timeSlots = [
-    "09:00",
-    "10:00",
-    "11:00",
-    "12:00",
-    "13:00",
-    "14:00",
-    "15:00",
-    "16:00",
-    "17:00",
-  ];
-  const slots: Date[] = [];
-
-  for (let dayOffset = 0; dayOffset < daysToCheck; dayOffset++) {
-    const baseDate = new Date();
-    baseDate.setHours(0, 0, 0, 0);
-    baseDate.setDate(baseDate.getDate() + dayOffset);
-
-    for (const time of timeSlots) {
-      const [hour, minute] = time.split(":").map(Number);
-      const slotDate = new Date(baseDate);
-      slotDate.setHours(hour, minute, 0, 0);
-
-      const existing = await prisma.appointment.findFirst({
-        where: { datetime: slotDate, status: { not: "CANCELED" } },
-      });
-
-      if (!existing) {
-        slots.push(slotDate);
-      }
-    }
-  }
-  return slots;
+// ======= UTILS =======
+function generateIdempotencyKey(
+  phone: string,
+  datetime: string,
+  service: string
+) {
+  return crypto
+    .createHash("sha256")
+    .update(`${phone}-${datetime}-${service}`)
+    .digest("hex");
 }
 
+function formatDateTimeBR(date: Date): string {
+  return date.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+}
+
+function gerarLinkGoogleAgenda({
+  title,
+  startDate,
+  endDate,
+  description,
+  location,
+}: {
+  title: string;
+  startDate: Date;
+  endDate: Date;
+  description: string;
+  location: string;
+}) {
+  const formatDate = (date: Date) =>
+    date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  const link = new URL("https://calendar.google.com/calendar/render");
+  link.searchParams.set("action", "TEMPLATE");
+  link.searchParams.set("text", title);
+  link.searchParams.set(
+    "dates",
+    `${formatDate(startDate)}/${formatDate(endDate)}`
+  );
+  link.searchParams.set("details", description);
+  link.searchParams.set("location", location);
+  return link.toString();
+}
+
+function processarSlots(slotsISO: string[]) {
+  const dias: string[] = [];
+  const horariosPorDia: { [dia: string]: string[] } = {};
+
+  for (const slotISO of slotsISO) {
+    const data = new Date(slotISO);
+    const dia = data.toLocaleDateString("pt-BR");
+    const horario = data.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    if (!dias.includes(dia)) {
+      dias.push(dia);
+    }
+
+    if (!horariosPorDia[dia]) {
+      horariosPorDia[dia] = [];
+    }
+
+    horariosPorDia[dia].push(horario);
+  }
+
+  return { dias, horariosPorDia };
+}
+
+async function sendAvailableDias(to: string, dias: string[]) {
+  const message = [
+    "📅 Escolha um dos dias disponíveis respondendo com o número correspondente:",
+    ...dias.map((dia, idx) => `${idx + 1}. ${dia}`),
+    "\nPor favor, responda apenas com o número da opção desejada.",
+  ].join("\n");
+
+  await sendWhatsAppMessage(to, message);
+}
+
+async function sendAvailableHorarios(to: string, horarios: string[]) {
+  const message = [
+    "⏰ Escolha um dos horários disponíveis para esse dia respondendo com o número correspondente:",
+    ...horarios.map((horario, idx) => `${idx + 1}. ${horario}`),
+    "\nPor favor, responda apenas com o número da opção desejada.",
+  ].join("\n");
+
+  await sendWhatsAppMessage(to, message);
+}
+
+// ======= WHATSAPP SENDERS =======
 async function sendWhatsAppMessage(to: string, message: string) {
   const res = await fetch(WHATSAPP_URL, {
     method: "POST",
@@ -87,41 +156,10 @@ async function sendWhatsAppMessage(to: string, message: string) {
   }
 }
 
-async function sendAvailableSlotsText(to: string, slots: string[]) {
-  let message =
-    "📅 Escolha um dos horários disponíveis respondendo com o número correspondente:\n\n";
-
-  slots.forEach((slotIso, index) => {
-    const date = new Date(slotIso);
-    message += `${index + 1}. ${formatDateTimeBR(date)}\n`;
-  });
-
-  message += "\nPor favor, responda apenas com o número da opção desejada.";
-  await sendWhatsAppMessage(to, message);
-}
-
-function formatDateTimeBR(date: Date): string {
-  const day = date.getDate().toString().padStart(2, "0");
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-  const year = date.getFullYear();
-  const hours = date.getHours().toString().padStart(2, "0");
-  const minutes = date.getMinutes().toString().padStart(2, "0");
-  return `${day}/${month}/${year} ${hours}:${minutes}`;
-}
-
-async function sendServiceOptions(to: string) {
-  const services = [
-    { id: "revisao_geral", title: "Revisão Geral" },
-    { id: "ajuste_freios", title: "Ajuste de Freios" },
-    { id: "ajuste_marchas", title: "Ajuste de Marchas" },
-    { id: "troca_pneus", title: "Troca de Pneus" },
-    { id: "troca_camera", title: "Troca de Câmera" },
-    { id: "lubrificacao_corrente", title: "Lubrificação da Corrente" },
-    { id: "limpeza_completa", title: "Limpeza Completa" },
-    { id: "alinhamento_rodas", title: "Alinhamento de Rodas" },
-    { id: "outro", title: "Outro" },
-  ];
-
+async function sendInteractiveList(
+  to: string,
+  services: { id: string; title: string }[]
+) {
   const messagePayload = {
     messaging_product: "whatsapp",
     to,
@@ -136,11 +174,7 @@ async function sendServiceOptions(to: string) {
         sections: [
           {
             title: "Tipos de serviço",
-            rows: services.map((service) => ({
-              id: service.id,
-              title: service.title,
-              description: "",
-            })),
+            rows: services.map((s) => ({ id: s.id, title: s.title })),
           },
         ],
       },
@@ -161,6 +195,63 @@ async function sendServiceOptions(to: string) {
   }
 }
 
+async function sendWelcomeMenu(to: string) {
+  const message = `👋 Olá! Bem-vindo à nossa assistência.
+
+Escolha uma das opções respondendo com o número:
+
+1️⃣ - Apresentação  
+2️⃣ - Informações adicionais  
+3️⃣ - Agendar um horário  
+4️⃣ - Sair`;
+
+  await sendWhatsAppMessage(to, message);
+}
+
+async function sendAvailableSlotsText(to: string, slots: string[]) {
+  const message = [
+    "📅 Escolha um dos horários disponíveis respondendo com o número correspondente:",
+    ...slots.map(
+      (slot, idx) => `${idx + 1}. ${formatDateTimeBR(new Date(slot))}`
+    ),
+    "\nPor favor, responda apenas com o número da opção desejada.",
+  ].join("\n");
+
+  await sendWhatsAppMessage(to, message);
+}
+
+async function getAvailableTimeSlots() {
+  const now = new Date();
+
+  const availabilities = await prisma.availability.findMany({
+    where: {
+      isBooked: false,
+      startDateTime: {
+        gte: now,
+      },
+    },
+    orderBy: {
+      startDateTime: "asc",
+    },
+  });
+
+  // Retornar as datas em ISO para fácil uso depois
+  return availabilities.map((avail) => avail.startDateTime.toISOString());
+}
+
+const servicesMap = {
+  revisao_geral: "Revisão Geral",
+  ajuste_freios: "Ajuste de Freios",
+  ajuste_marchas: "Ajuste de Marchas",
+  troca_pneus: "Troca de Pneus",
+  troca_camera: "Troca de Câmera",
+  lubrificacao_corrente: "Lubrificação da Corrente",
+  limpeza_completa: "Limpeza Completa",
+  alinhamento_rodas: "Alinhamento de Rodas",
+  outro: "Outro",
+};
+
+// ======= MAIN HANDLER =======
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
@@ -171,26 +262,74 @@ export async function POST(req: NextRequest) {
 
     for (const message of messages) {
       const phone = message.from;
+      const text = message.text?.body.trim();
 
       if (!conversationState[phone]) {
-        conversationState[phone] = { etapa: "nome", dados: {} };
-        await sendWhatsAppMessage(
-          phone,
-          "👋 Olá! Para agendar, preciso do seu nome."
-        );
+        conversationState[phone] = { etapa: "inicio", dados: {} };
+        await sendWelcomeMenu(phone);
         continue;
       }
 
       const estado = conversationState[phone];
 
       switch (estado.etapa) {
+        case "inicio":
+          if (!["1", "2", "3", "4"].includes(text)) {
+            await sendWhatsAppMessage(
+              phone,
+              "Por favor, responda com uma das opções: 1, 2, 3 ou 4."
+            );
+            break;
+          }
+
+          switch (text) {
+            case "1":
+              await sendWhatsAppMessage(
+                phone,
+                "Somos a Nazarió Cicles, assistência especializada em manutenção e cuidados com sua bike! 🚴‍♂️"
+              );
+              await sendWelcomeMenu(phone);
+              break;
+            case "2":
+              await sendWhatsAppMessage(
+                phone,
+                "🏪 Funcionamos de segunda a sexta, das 9h às 18h.\n📍 Endereço: Rua Hamilton José Silveira Machado, 22\n📞 Contato: (47) 99999-9999"
+              );
+              await sendWelcomeMenu(phone);
+              break;
+            case "3":
+              estado.etapa = "nome";
+              await sendWhatsAppMessage(
+                phone,
+                "Ótimo! Para agendar, por favor, me informe seu nome:"
+              );
+              break;
+            case "4":
+              await sendWhatsAppMessage(
+                phone,
+                "Até mais! 👋 Se precisar, é só chamar."
+              );
+              delete conversationState[phone];
+              break;
+          }
+          break;
+
         case "nome":
           try {
-            estado.dados.nome = nomeSchema.parse(message.text.body.trim());
+            if (!text || text.trim().length < 2) {
+              await sendWhatsAppMessage(
+                phone,
+                "Por favor, envie um nome válido com pelo menos 2 caracteres."
+              );
+              break;
+            }
+
+            const nome = nomeSchema.parse(text.trim());
+            estado.dados.nome = nome;
             estado.dados.numero = phone;
 
             const slots = await getAvailableTimeSlots();
-            if (slots.length === 0) {
+            if (!slots.length) {
               await sendWhatsAppMessage(
                 phone,
                 "Desculpe, não há horários disponíveis nos próximos dias."
@@ -199,42 +338,122 @@ export async function POST(req: NextRequest) {
               break;
             }
 
-            estado.dados.slots = slots.map((slot) => slot.toISOString());
-            await sendAvailableSlotsText(phone, estado.dados.slots);
-            estado.etapa = "data_confirmation";
-          } catch (error) {
-            console.error("Erro ao validar nome:", error);
+            const { dias, horariosPorDia } = processarSlots(slots);
+            estado.dados = {
+              ...estado.dados,
+              dias,
+              slots,
+              horarios: [],
+              horariosPorDia,
+            };
+
+            estado.etapa = "dia_selection";
+            await sendAvailableDias(phone, dias);
+          } catch (err) {
+            console.error("Erro ao validar nome:", err);
             await sendWhatsAppMessage(
               phone,
-              "Por favor, envie um nome válido (mínimo 2 caracteres)."
+              "Por favor, envie um nome válido (mínimo 2 caracteres e com pelo menos uma letra)."
+            );
+          }
+          break;
+
+        case "dia_selection":
+          try {
+            const escolha = escolhaHorarioSchema.parse(text);
+            const dias = estado.dados.dias!;
+            if (escolha < 1 || escolha > dias.length)
+              throw new Error("Fora do intervalo");
+
+            const diaEscolhido = dias[escolha - 1];
+            estado.dados.data = diaEscolhido;
+
+            const horarios = estado.dados.horariosPorDia?.[diaEscolhido] || [];
+            if (!horarios.length) {
+              await sendWhatsAppMessage(
+                phone,
+                "Não há horários disponíveis para esse dia. Por favor, escolha outro."
+              );
+              await sendAvailableDias(phone, dias);
+              break;
+            }
+
+            estado.dados.horarios = horarios;
+            estado.etapa = "horario_selection";
+            await sendAvailableHorarios(phone, horarios);
+          } catch {
+            await sendWhatsAppMessage(
+              phone,
+              "Por favor, responda com o número do dia escolhido."
+            );
+          }
+          break;
+
+        case "horario_selection":
+          try {
+            const escolha = escolhaHorarioSchema.parse(text);
+            const horarios = estado.dados.horarios!;
+            if (escolha < 1 || escolha > horarios.length)
+              throw new Error("Fora do intervalo");
+
+            const horarioEscolhido = horarios[escolha - 1];
+            const dataEscolhida = estado.dados.data!;
+
+            const slotISO = estado.dados.slots!.find((slot) => {
+              const slotDate = new Date(slot);
+              const dia = slotDate.toLocaleDateString("pt-BR");
+              const horario = slotDate.toLocaleTimeString("pt-BR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+              return dia === dataEscolhida && horario === horarioEscolhido;
+            });
+
+            if (!slotISO) {
+              await sendWhatsAppMessage(
+                phone,
+                "Esse horário não está mais disponível. Por favor, escolha outro."
+              );
+              await sendAvailableHorarios(phone, horarios);
+              break;
+            }
+
+            estado.dados.data = slotISO;
+            estado.etapa = "service";
+
+            await sendInteractiveList(
+              phone,
+              Object.entries(servicesMap).map(([id, title]) => ({ id, title }))
+            );
+          } catch {
+            await sendWhatsAppMessage(
+              phone,
+              "Por favor, responda com o número do horário escolhido."
             );
           }
           break;
 
         case "data_confirmation":
           try {
-            const escolha = escolhaHorarioSchema.parse(
-              message.text.body.trim()
-            );
+            const escolha = escolhaHorarioSchema.parse(text);
             const slots = estado.dados.slots!;
-            if (escolha < 1 || escolha > slots.length) {
-              throw new Error("Escolha fora do intervalo");
-            }
+            if (escolha < 1 || escolha > slots.length)
+              throw new Error("Fora do intervalo");
 
             const selectedDate = new Date(slots[escolha - 1]);
 
-            const existing = await prisma.appointment.findFirst({
+            const exists = await prisma.appointment.findFirst({
               where: { datetime: selectedDate, status: { not: "CANCELED" } },
             });
 
-            if (existing) {
+            if (exists) {
               await sendWhatsAppMessage(
                 phone,
                 "Esse horário já foi agendado. Por favor, escolha outro."
               );
-              // Atualizar lista e reenvia
+
               const newSlots = await getAvailableTimeSlots();
-              if (newSlots.length === 0) {
+              if (!newSlots.length) {
                 await sendWhatsAppMessage(
                   phone,
                   "Sem horários disponíveis no momento. Tente novamente depois."
@@ -242,8 +461,9 @@ export async function POST(req: NextRequest) {
                 delete conversationState[phone];
                 break;
               }
-              estado.dados.slots = newSlots.map((s) => s.toISOString());
-              await sendAvailableSlotsText(phone, estado.dados.slots);
+
+              estado.dados.slots = newSlots;
+              await sendAvailableSlotsText(phone, newSlots);
               break;
             }
 
@@ -251,7 +471,10 @@ export async function POST(req: NextRequest) {
             delete estado.dados.slots;
             estado.etapa = "service";
 
-            await sendServiceOptions(phone);
+            await sendInteractiveList(
+              phone,
+              Object.entries(servicesMap).map(([id, title]) => ({ id, title }))
+            );
           } catch {
             await sendWhatsAppMessage(
               phone,
@@ -261,7 +484,9 @@ export async function POST(req: NextRequest) {
           break;
 
         case "service":
-          if (!message.interactive?.list_reply?.id) {
+          const selectedId = message.interactive?.list_reply
+            ?.id as keyof typeof servicesMap;
+          if (!selectedId) {
             await sendWhatsAppMessage(
               phone,
               "Selecione um serviço usando a lista enviada."
@@ -269,31 +494,8 @@ export async function POST(req: NextRequest) {
             break;
           }
 
-          const servicesMap: { [key: string]: string } = {
-            revisao_geral: "Revisão Geral",
-            ajuste_freios: "Ajuste de Freios",
-            ajuste_marchas: "Ajuste de Marchas",
-            troca_pneus: "Troca de Pneus",
-            troca_camera: "Troca de Câmera",
-            lubrificacao_corrente: "Lubrificação da Corrente",
-            limpeza_completa: "Limpeza Completa",
-            alinhamento_rodas: "Alinhamento de Rodas",
-            outro: "Outro",
-          };
-
-          const selectedService =
-            servicesMap[message.interactive.list_reply.id];
-          if (!selectedService) {
-            await sendWhatsAppMessage(
-              phone,
-              "Serviço inválido. Por favor, escolha novamente."
-            );
-            break;
-          }
-
-          estado.dados.service = selectedService;
+          estado.dados.service = servicesMap[selectedId];
           estado.etapa = "note";
-
           await sendWhatsAppMessage(
             phone,
             "Alguma observação para o agendamento? Responda 'Não' para nenhuma."
@@ -302,33 +504,73 @@ export async function POST(req: NextRequest) {
 
         case "note":
           try {
-            const noteRaw = message.text.body.trim();
-            estado.dados.note =
-              noteRaw.toLowerCase() === "não" ? "" : noteSchema.parse(noteRaw);
+            const note =
+              text.toLowerCase() === "não" ? "" : noteSchema.parse(text);
+            estado.dados.note = note;
 
-            // Grava no banco
-            const appointment = await prisma.appointment.create({
-              data: {
-                name: estado.dados.nome!,
-                phone: estado.dados.numero!,
-                datetime: new Date(estado.dados.data!),
-                service: estado.dados.service!,
-                notes: estado.dados.note,
-              },
+            const appointmentDate = new Date(estado.dados.data!);
+
+            const availability = await prisma.availability.findFirst({
+              where: { startDateTime: appointmentDate, isBooked: false },
             });
-            console.log("Agendamento criado:", appointment);
+
+            if (!availability) {
+              await sendWhatsAppMessage(
+                phone,
+                "Desculpe, o horário selecionado já foi reservado. Por favor, reinicie o agendamento."
+              );
+              delete conversationState[phone];
+              break;
+            }
+
+            const idempotencyKey = generateIdempotencyKey(
+              estado.dados.numero!,
+              estado.dados.data!,
+              estado.dados.service!
+            );
+
+            await prisma.$transaction([
+              prisma.appointment.create({
+                data: {
+                  name: estado.dados.nome!,
+                  phone: estado.dados.numero!,
+                  datetime: appointmentDate,
+                  service: estado.dados.service!,
+                  notes: estado.dados.note,
+                  idempotencyKey,
+                  availabilityId: availability.id,
+                },
+              }),
+              prisma.availability.update({
+                where: { id: availability.id },
+                data: { isBooked: true },
+              }),
+            ]);
 
             await sendWhatsAppMessage(
               phone,
-              `✅ Agendamento solicitado com sucesso!\n\n` +
-                `👤 Nome: ${estado.dados.nome}\n` +
-                `📞 Telefone: ${estado.dados.numero}\n` +
-                `📅 Data e Hora: ${formatDateTimeBR(
-                  new Date(estado.dados.data!)
-                )}\n` +
-                `💼 Serviço: ${estado.dados.service}\n` +
-                `📝 Observações: ${estado.dados.note || "Nenhuma"}\n\n` +
-                `Você receberá uma confirmação em breve!`
+              `✅ Agendamento solicitado com sucesso!
+👤 Nome: ${estado.dados.nome}
+📞 Telefone: ${estado.dados.numero}
+📅 Data e Hora: ${formatDateTimeBR(appointmentDate)}
+💼 Serviço: ${estado.dados.service}
+📝 Observações: ${estado.dados.note || "Nenhuma"}`
+            );
+
+            const link = gerarLinkGoogleAgenda({
+              title: "Agendamento na Nazario Cicles",
+              startDate: appointmentDate,
+              endDate: new Date(appointmentDate.getTime() + 3600000),
+              description: `Serviço: ${estado.dados.service}\nObservações: ${
+                estado.dados.note || "Nenhuma"
+              }`,
+              location:
+                "Nazario Cicles - Rua Hamilton José Silveira Machado, 22",
+            });
+
+            await sendWhatsAppMessage(
+              phone,
+              `✅ Para não esquecer, adicione na sua agenda: \n${link}`
             );
 
             delete conversationState[phone];
@@ -349,4 +591,18 @@ export async function POST(req: NextRequest) {
   } finally {
     await prisma.$disconnect();
   }
+}
+
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const mode = searchParams.get("hub.mode");
+  const token = searchParams.get("hub.verify_token");
+  const challenge = searchParams.get("hub.challenge");
+
+  if (mode === "subscribe" && token === process.env.WHATSAPP_VERIFY_TOKEN) {
+    console.log("WEBHOOK_VERIFIED");
+    return new Response(challenge, { status: 200 });
+  }
+  console.warn("Webhook verification failed", { mode, token });
+  return new Response("Forbidden", { status: 403 });
 }

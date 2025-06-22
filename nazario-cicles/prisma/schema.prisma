@@ -7,18 +7,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Appointment {
-  id        String   @id @default(uuid())
-  name      String
-  phone     String
-  datetime  DateTime
-  status    Status   @default(PENDING)
-  service   String
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Availability {
+  id            Int      @id @default(autoincrement())
+  startDateTime DateTime
+  endDateTime   DateTime
+  isBooked      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  appointments Appointment[] // relação inversa
 }
 
+model Appointment {
+  id             String   @id @default(uuid())
+  name           String
+  phone          String
+  datetime       DateTime
+  status         Status   @default(PENDING)
+  service        String
+  notes          String?
+  idempotencyKey String   @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  availabilityId Int? // chave estrangeira opcional (ou obrigatória, se quiser)
+  availability   Availability? @relation(fields: [availabilityId], references: [id])
+}
 
 enum Status {
   PENDING
