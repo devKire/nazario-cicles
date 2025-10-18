@@ -176,34 +176,35 @@ const ServiceItem = ({ service, bikeshop }: ServiceItemProps) => {
   return (
     <>
       <Card className="group border-gray-700/50 bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm transition-all duration-300 hover:border-blue-500/20 hover:from-gray-800/70 hover:to-gray-900/70 hover:shadow-2xl">
-        <CardContent className="flex items-center gap-4 p-4">
-          {/* IMAGEM COM EFEITO */}
-          <div className="relative max-h-[110px] min-h-[110px] min-w-[110px] max-w-[110px]">
+        <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
+          {/* IMAGEM COM EFEITO - Responsiva */}
+          <div className="relative mx-auto h-24 w-24 min-w-24 sm:h-28 sm:w-28 sm:min-w-28">
             <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 transition-all duration-300 group-hover:from-blue-500/30 group-hover:to-purple-500/30" />
             <Image
               alt={service.name}
               src={service.imageUrl}
               fill
               className="rounded-xl object-cover transition-transform duration-300 group-hover:scale-105"
+              sizes="(max-width: 640px) 96px, 112px"
             />
           </div>
 
           {/* CONTEÚDO */}
           <div className="flex-1 space-y-3">
-            <div>
-              <h3 className="text-sm font-bold text-white transition-colors duration-200 group-hover:text-blue-400">
+            <div className="text-center sm:text-left">
+              <h3 className="text-sm font-bold text-white transition-colors duration-200 group-hover:text-blue-400 sm:text-base">
                 {service.name}
               </h3>
-              <p className="mt-1 line-clamp-2 text-xs text-gray-400">
+              <p className="mt-1 line-clamp-2 text-xs text-gray-400 sm:text-sm">
                 {service.description}
               </p>
             </div>
 
             {/* PREÇO E BOTÃO */}
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col">
+            <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
+              <div className="flex flex-col items-center sm:items-start">
                 <span className="text-xs text-gray-500">A partir de</span>
-                <p className="bg-gradient-to-r from-blue-400 to-orange-400 bg-clip-text text-lg font-bold text-transparent">
+                <p className="bg-gradient-to-r from-blue-400 to-orange-400 bg-clip-text text-lg font-bold text-transparent sm:text-xl">
                   {Intl.NumberFormat("pt-BR", {
                     style: "currency",
                     currency: "BRL",
@@ -219,26 +220,26 @@ const ServiceItem = ({ service, bikeshop }: ServiceItemProps) => {
                   variant="secondary"
                   size="sm"
                   onClick={handleBookingClick}
-                  className="group/btn bg-gradient-to-r from-blue-600 to-orange-600 font-semibold text-white shadow-lg transition-all duration-200 hover:from-blue-700 hover:to-orange-700 hover:shadow-blue-500/25"
+                  className="group/btn w-full bg-gradient-to-r from-blue-600 to-orange-600 font-semibold text-white shadow-lg transition-all duration-200 hover:from-blue-700 hover:to-orange-700 hover:shadow-blue-500/25 sm:w-auto"
                 >
                   <CalendarIcon className="mr-2 h-4 w-4 transition-transform group-hover/btn:scale-110" />
                   Agendar
                 </Button>
 
-                <SheetContent className="border-l border-gray-700/50 bg-gradient-to-b from-gray-900 to-gray-800 px-0">
-                  <SheetHeader className="border-b border-gray-700/50 px-6 pb-4">
+                <SheetContent className="border-l border-gray-700/50 bg-gradient-to-b from-gray-900 to-gray-800 px-0 sm:max-w-md">
+                  <SheetHeader className="border-b border-gray-700/50 px-4 pb-4 sm:px-6">
                     <div className="flex items-center gap-2">
                       <div className="rounded-lg bg-blue-500/10 p-2">
                         <CalendarIcon className="h-5 w-5 text-blue-400" />
                       </div>
-                      <SheetTitle className="text-white">
+                      <SheetTitle className="text-sm text-white sm:text-base">
                         Fazer Agendamento
                       </SheetTitle>
                     </div>
                   </SheetHeader>
 
-                  <div className="border-b border-gray-700/50 py-6">
-                    <div className="mb-4 px-6">
+                  <div className="border-b border-gray-700/50 py-4 sm:py-6">
+                    <div className="mb-3 px-4 sm:mb-4 sm:px-6">
                       <div className="flex items-center gap-2 text-sm font-medium text-blue-400">
                         <Clock className="h-4 w-4" />
                         Selecione a data
@@ -250,13 +251,13 @@ const ServiceItem = ({ service, bikeshop }: ServiceItemProps) => {
                       selected={selectedDay}
                       onSelect={handleDateSelect}
                       fromDate={new Date()}
-                      className="px-6"
+                      className="px-4 sm:px-6"
                       styles={{
                         head_cell: {
                           width: "100%",
                           textTransform: "capitalize",
                           color: "#9CA3AF",
-                          fontSize: "0.875rem",
+                          fontSize: "0.75rem",
                         },
                         cell: {
                           width: "100%",
@@ -264,26 +265,27 @@ const ServiceItem = ({ service, bikeshop }: ServiceItemProps) => {
                         button: {
                           width: "100%",
                           color: "#E5E7EB",
-                          borderRadius: "8px",
+                          borderRadius: "6px",
                           transition: "all 0.2s",
+                          fontSize: "0.875rem",
                         },
                         day: {
-                          borderRadius: "8px",
+                          borderRadius: "6px",
                         },
                         nav_button_previous: {
-                          width: "32px",
-                          height: "32px",
+                          width: "28px",
+                          height: "28px",
                           color: "#9CA3AF",
                         },
                         nav_button_next: {
-                          width: "32px",
-                          height: "32px",
+                          width: "28px",
+                          height: "28px",
                           color: "#9CA3AF",
                         },
                         caption: {
                           textTransform: "capitalize",
                           color: "#E5E7EB",
-                          fontSize: "1rem",
+                          fontSize: "0.9rem",
                           fontWeight: "600",
                         },
                         caption_label: {
@@ -294,14 +296,14 @@ const ServiceItem = ({ service, bikeshop }: ServiceItemProps) => {
                   </div>
 
                   {selectedDay && (
-                    <div className="border-b border-gray-700/50 py-6">
-                      <div className="mb-4 px-6">
+                    <div className="border-b border-gray-700/50 py-4 sm:py-6">
+                      <div className="mb-3 px-4 sm:mb-4 sm:px-6">
                         <div className="flex items-center gap-2 text-sm font-medium text-purple-400">
                           <Clock className="h-4 w-4" />
                           Horários disponíveis
                         </div>
                       </div>
-                      <div className="flex gap-2 overflow-x-auto px-6 [&::-webkit-scrollbar]:hidden">
+                      <div className="flex gap-2 overflow-x-auto px-4 pb-2 sm:px-6 [&::-webkit-scrollbar]:hidden">
                         {timeList.length > 0 ? (
                           timeList.map((time) => (
                             <Button
@@ -309,7 +311,8 @@ const ServiceItem = ({ service, bikeshop }: ServiceItemProps) => {
                               variant={
                                 selectedTime === time ? "default" : "outline"
                               }
-                              className={`rounded-full font-medium transition-all duration-200 ${
+                              size="sm"
+                              className={`min-w-[70px] rounded-full font-medium transition-all duration-200 ${
                                 selectedTime === time
                                   ? "border-purple-500 bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
                                   : "border-gray-600 bg-gray-800 text-gray-300 hover:border-purple-400/50 hover:bg-gray-700"
@@ -317,14 +320,14 @@ const ServiceItem = ({ service, bikeshop }: ServiceItemProps) => {
                               onClick={() => handleTimeSelect(time)}
                             >
                               {selectedTime === time && (
-                                <CheckCircle2 className="mr-1 h-4 w-4" />
+                                <CheckCircle2 className="mr-1 h-3 w-3" />
                               )}
                               {time}
                             </Button>
                           ))
                         ) : (
-                          <div className="w-full py-4 text-center">
-                            <p className="text-sm text-gray-400">
+                          <div className="w-full py-3 text-center">
+                            <p className="text-xs text-gray-400 sm:text-sm">
                               Não há horários disponíveis para este dia.
                             </p>
                           </div>
@@ -334,7 +337,7 @@ const ServiceItem = ({ service, bikeshop }: ServiceItemProps) => {
                   )}
 
                   {selectedDate && (
-                    <div className="p-6">
+                    <div className="p-4 sm:p-6">
                       <BookingSummary
                         bikeshop={bikeshop}
                         service={service}
@@ -343,13 +346,13 @@ const ServiceItem = ({ service, bikeshop }: ServiceItemProps) => {
                     </div>
                   )}
 
-                  <SheetFooter className="mt-5 px-6">
+                  <SheetFooter className="mt-4 px-4 sm:mt-5 sm:px-6">
                     <Button
                       onClick={handleCreateBooking}
                       disabled={!selectedDay || !selectedTime}
-                      className="w-full rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:from-green-700 hover:to-emerald-700 hover:shadow-green-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="w-full rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:from-green-700 hover:to-emerald-700 hover:shadow-green-500/25 disabled:cursor-not-allowed disabled:opacity-50 sm:text-base"
                     >
-                      <CheckCircle2 className="mr-2 h-5 w-5" />
+                      <CheckCircle2 className="mr-2 h-4 w-4" />
                       Confirmar Agendamento
                     </Button>
                   </SheetFooter>
@@ -364,7 +367,7 @@ const ServiceItem = ({ service, bikeshop }: ServiceItemProps) => {
         open={signInDialogIsOpen}
         onOpenChange={(open) => setSignInDialogIsOpen(open)}
       >
-        <DialogContent className="w-[90%] border-gray-700/50 bg-gradient-to-br from-gray-900 to-gray-800">
+        <DialogContent className="w-[95%] max-w-md border-gray-700/50 bg-gradient-to-br from-gray-900 to-gray-800 p-4 sm:p-6">
           <SignInDialog />
         </DialogContent>
       </Dialog>

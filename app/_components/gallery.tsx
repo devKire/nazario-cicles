@@ -239,19 +239,20 @@ const Gallery = ({ gallery, whatsappUrl, phones = [] }: GalleryProps) => {
       {/* Lightbox Modal */}
       {selectedMedia && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/95 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/95 p-4 backdrop-blur-sm"
           onClick={closeLightbox}
         >
           <div
-            className="relative mx-auto max-h-[90vh] w-full max-w-4xl"
+            className="relative mx-auto flex h-full w-full max-w-6xl items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
             <button
               onClick={closeLightbox}
-              className="absolute -top-12 right-0 z-10 rounded-full bg-slate-800/80 p-2 text-white transition-all duration-200 hover:scale-110 hover:bg-slate-700/80"
+              className="absolute right-4 top-4 z-10 rounded-full bg-slate-800/80 p-2 text-white transition-all duration-200 hover:scale-110 hover:bg-slate-700/80 md:right-6 md:top-6"
+              aria-label="Fechar lightbox"
             >
-              <X className="h-6 w-6" />
+              <X className="h-5 w-5 md:h-6 md:w-6" />
             </button>
 
             {/* Navigation Buttons */}
@@ -259,60 +260,82 @@ const Gallery = ({ gallery, whatsappUrl, phones = [] }: GalleryProps) => {
               <>
                 <button
                   onClick={() => navigateMedia("prev")}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-slate-800/80 p-3 text-white transition-all duration-200 hover:scale-110 hover:bg-slate-700/80"
+                  className="absolute left-2 top-1/2 z-50 -translate-y-1/2 rounded-full bg-slate-800/80 p-2 text-white transition-all duration-200 hover:scale-110 hover:bg-slate-700/80 md:left-4 md:p-3"
+                  aria-label="Mídia anterior"
                 >
-                  <ChevronLeft className="h-6 w-6" />
+                  <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
                 </button>
                 <button
                   onClick={() => navigateMedia("next")}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-slate-800/80 p-3 text-white transition-all duration-200 hover:scale-110 hover:bg-slate-700/80"
+                  className="absolute right-2 top-1/2 z-50 -translate-y-1/2 rounded-full bg-slate-800/80 p-2 text-white transition-all duration-200 hover:scale-110 hover:bg-slate-700/80 md:right-4 md:p-3"
+                  aria-label="Próxima mídia"
                 >
-                  <ChevronRight className="h-6 w-6" />
+                  <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
                 </button>
               </>
             )}
 
             {/* Media Content */}
-            <div className="relative overflow-hidden rounded-2xl bg-slate-800/50">
+            <div className="relative w-full max-w-4xl overflow-hidden rounded-2xl bg-slate-800/50">
               {selectedMedia.mediaType === "VIDEO" ? (
-                <div className="relative">
+                <div className="relative flex items-center justify-center bg-black">
                   <video
                     ref={videoRef}
                     src={selectedMedia.imageUrl}
-                    className="max-h-[70vh] w-full object-contain"
-                    controls
+                    className="max-h-[85vh] w-full object-contain md:max-h-[80vh]"
+                    controls={!isPlaying} // Mostra controles nativos apenas quando não está playing
                     autoPlay={isPlaying}
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
+                    onEnded={() => setIsPlaying(false)}
+                    playsInline
+                    controlsList="nodownload"
+                    preload="metadata"
                   />
-                  {/* Custom Play/Pause Button */}
-                  <button
-                    onClick={togglePlayPause}
-                    className="absolute bottom-4 left-4 rounded-full bg-slate-800/80 p-3 text-white backdrop-blur-sm transition-all hover:bg-slate-700/80"
-                  >
-                    {isPlaying ? (
-                      <Pause className="h-6 w-6" />
-                    ) : (
-                      <Play className="h-6 w-6 fill-white" />
-                    )}
-                  </button>
+
+                  {/* Overlay de controles personalizados */}
+                  {!isPlaying && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-slate-900/20">
+                      <button
+                        onClick={togglePlayPause}
+                        className="rounded-full bg-slate-800/90 p-4 text-white backdrop-blur-sm transition-all hover:scale-110 hover:bg-slate-700/90 md:p-6"
+                        aria-label="Reproduzir vídeo"
+                      >
+                        <Play className="h-8 w-8 fill-white md:h-12 md:w-12" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Botão de play/pause flutuante - apenas quando o vídeo está playing */}
+                  {isPlaying && (
+                    <button
+                      onClick={togglePlayPause}
+                      className="absolute bottom-6 left-6 z-20 rounded-full bg-slate-800/90 p-3 text-white backdrop-blur-sm transition-all hover:bg-slate-700/90 md:p-4"
+                      aria-label="Pausar vídeo"
+                    >
+                      <Pause className="h-6 w-6 md:h-8 md:w-8" />
+                    </button>
+                  )}
                 </div>
               ) : (
-                <div className="flex items-center justify-center p-4">
+                // ... resto do código para imagens
+                <div className="flex items-center justify-center p-2 md:p-4">
                   <Image
                     src={selectedMedia.imageUrl}
                     alt={selectedMedia.caption || "Imagem ampliada"}
                     width={1200}
                     height={800}
-                    className="max-h-[70vh] w-auto rounded-lg object-contain"
+                    className="max-h-[85vh] w-auto max-w-full rounded-lg object-contain md:max-h-[80vh]"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 80vw"
+                    priority
                   />
                 </div>
               )}
 
               {/* Caption */}
               {selectedMedia.caption && (
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900/90 to-transparent p-6">
-                  <p className="text-center text-lg font-medium text-white">
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900/90 via-slate-900/70 to-transparent p-4 md:p-6">
+                  <p className="text-center text-sm font-medium text-white md:text-lg">
                     {selectedMedia.caption}
                     {selectedMedia.mediaType === "VIDEO" && (
                       <span className="ml-2 text-blue-300">• Vídeo</span>
@@ -324,8 +347,8 @@ const Gallery = ({ gallery, whatsappUrl, phones = [] }: GalleryProps) => {
 
             {/* Media Counter */}
             {galleryMedia.length > 1 && (
-              <div className="mt-4 text-center">
-                <span className="rounded-full bg-slate-800/80 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm">
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 md:bottom-6">
+                <span className="rounded-full bg-slate-800/80 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm md:px-4 md:py-2 md:text-sm">
                   {currentIndex + 1} / {galleryMedia.length}
                 </span>
               </div>
