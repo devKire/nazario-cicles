@@ -1,6 +1,6 @@
 "use client"
 
-import { Barbershop, BarbershopService, Booking } from "@prisma/client"
+import { BikeShop, BikeService, Booking } from "@prisma/client"
 import Image from "next/image"
 import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
@@ -23,10 +23,11 @@ import { Dialog, DialogContent } from "./ui/dialog"
 import SignInDialog from "./sign-in-dialog"
 import BookingSummary from "./booking-summary"
 import { useRouter } from "next/navigation"
+import { Clock, Calendar as CalendarIcon, CheckCircle2 } from "lucide-react"
 
 interface ServiceItemProps {
-  service: BarbershopService
-  barbershop: Pick<Barbershop, "name">
+  service: BikeService
+  bikeshop: Pick<BikeShop, "name">
 }
 
 const TIME_LIST = [
@@ -80,7 +81,7 @@ const getTimeList = ({ bookings, selectedDay }: GetTimeListProps) => {
   })
 }
 
-const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
+const ServiceItem = ({ service, bikeshop }: ServiceItemProps) => {
   const { data } = useSession()
   const router = useRouter()
   const [signInDialogIsOpen, setSignInDialogIsOpen] = useState(false)
@@ -141,15 +142,26 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
         date: selectedDate,
       })
       handleBookingSheetOpenChange()
-      toast.success("Reserva criada com sucesso!", {
+      toast.success("🎉 Agendamento criado com sucesso!", {
         action: {
           label: "Ver agendamentos",
           onClick: () => router.push("/bookings"),
         },
+        style: {
+          background: "#10b981",
+          color: "white",
+          border: "none",
+        },
       })
     } catch (error) {
       console.error(error)
-      toast.error("Erro ao criar reserva!")
+      toast.error("❌ Erro ao criar agendamento!", {
+        style: {
+          background: "#ef4444",
+          color: "white",
+          border: "none",
+        },
+      })
     }
   }
 
@@ -163,29 +175,41 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
 
   return (
     <>
-      <Card>
-        <CardContent className="flex items-center gap-3 p-3">
-          {/* IMAGE */}
+      <Card className="group border-gray-700/50 bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm transition-all duration-300 hover:border-blue-500/20 hover:from-gray-800/70 hover:to-gray-900/70 hover:shadow-2xl">
+        <CardContent className="flex items-center gap-4 p-4">
+          {/* IMAGEM COM EFEITO */}
           <div className="relative max-h-[110px] min-h-[110px] min-w-[110px] max-w-[110px]">
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 transition-all duration-300 group-hover:from-blue-500/30 group-hover:to-purple-500/30" />
             <Image
               alt={service.name}
               src={service.imageUrl}
               fill
-              className="rounded-lg object-cover"
+              className="rounded-xl object-cover transition-transform duration-300 group-hover:scale-105"
             />
           </div>
-          {/* DIREITA */}
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold">{service.name}</h3>
-            <p className="text-sm text-gray-400">{service.description}</p>
+
+          {/* CONTEÚDO */}
+          <div className="flex-1 space-y-3">
+            <div>
+              <h3 className="text-sm font-bold text-white transition-colors duration-200 group-hover:text-blue-400">
+                {service.name}
+              </h3>
+              <p className="mt-1 line-clamp-2 text-xs text-gray-400">
+                {service.description}
+              </p>
+            </div>
+
             {/* PREÇO E BOTÃO */}
             <div className="flex items-center justify-between">
-              <p className="text-sm font-bold text-primary">
-                {Intl.NumberFormat("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                }).format(Number(service.price))}
-              </p>
+              <div className="flex flex-col">
+                <span className="text-xs text-gray-500">A partir de</span>
+                <p className="bg-gradient-to-r from-blue-400 to-orange-400 bg-clip-text text-lg font-bold text-transparent">
+                  {Intl.NumberFormat("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  }).format(Number(service.price))}
+                </p>
+              </div>
 
               <Sheet
                 open={bookingSheetIsOpen}
@@ -195,86 +219,138 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
                   variant="secondary"
                   size="sm"
                   onClick={handleBookingClick}
+                  className="group/btn bg-gradient-to-r from-blue-600 to-orange-600 font-semibold text-white shadow-lg transition-all duration-200 hover:from-blue-700 hover:to-orange-700 hover:shadow-blue-500/25"
                 >
-                  Reservar
+                  <CalendarIcon className="mr-2 h-4 w-4 transition-transform group-hover/btn:scale-110" />
+                  Agendar
                 </Button>
 
-                <SheetContent className="px-0">
-                  <SheetHeader>
-                    <SheetTitle>Fazer Reserva</SheetTitle>
+                <SheetContent className="border-l border-gray-700/50 bg-gradient-to-b from-gray-900 to-gray-800 px-0">
+                  <SheetHeader className="border-b border-gray-700/50 px-6 pb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="rounded-lg bg-blue-500/10 p-2">
+                        <CalendarIcon className="h-5 w-5 text-blue-400" />
+                      </div>
+                      <SheetTitle className="text-white">
+                        Fazer Agendamento
+                      </SheetTitle>
+                    </div>
                   </SheetHeader>
 
-                  <div className="border-b border-solid py-5">
+                  <div className="border-b border-gray-700/50 py-6">
+                    <div className="mb-4 px-6">
+                      <div className="flex items-center gap-2 text-sm font-medium text-blue-400">
+                        <Clock className="h-4 w-4" />
+                        Selecione a data
+                      </div>
+                    </div>
                     <Calendar
                       mode="single"
                       locale={ptBR}
                       selected={selectedDay}
                       onSelect={handleDateSelect}
                       fromDate={new Date()}
+                      className="px-6"
                       styles={{
                         head_cell: {
                           width: "100%",
                           textTransform: "capitalize",
+                          color: "#9CA3AF",
+                          fontSize: "0.875rem",
                         },
                         cell: {
                           width: "100%",
                         },
                         button: {
                           width: "100%",
+                          color: "#E5E7EB",
+                          borderRadius: "8px",
+                          transition: "all 0.2s",
+                        },
+                        day: {
+                          borderRadius: "8px",
                         },
                         nav_button_previous: {
                           width: "32px",
                           height: "32px",
+                          color: "#9CA3AF",
                         },
                         nav_button_next: {
                           width: "32px",
                           height: "32px",
+                          color: "#9CA3AF",
                         },
                         caption: {
                           textTransform: "capitalize",
+                          color: "#E5E7EB",
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                        },
+                        caption_label: {
+                          color: "#E5E7EB",
                         },
                       }}
                     />
                   </div>
 
                   {selectedDay && (
-                    <div className="flex gap-3 overflow-x-auto border-b border-solid p-5 [&::-webkit-scrollbar]:hidden">
-                      {timeList.length > 0 ? (
-                        timeList.map((time) => (
-                          <Button
-                            key={time}
-                            variant={
-                              selectedTime === time ? "default" : "outline"
-                            }
-                            className="rounded-full"
-                            onClick={() => handleTimeSelect(time)}
-                          >
-                            {time}
-                          </Button>
-                        ))
-                      ) : (
-                        <p className="text-xs">
-                          Não há horários disponíveis para este dia.
-                        </p>
-                      )}
+                    <div className="border-b border-gray-700/50 py-6">
+                      <div className="mb-4 px-6">
+                        <div className="flex items-center gap-2 text-sm font-medium text-purple-400">
+                          <Clock className="h-4 w-4" />
+                          Horários disponíveis
+                        </div>
+                      </div>
+                      <div className="flex gap-2 overflow-x-auto px-6 [&::-webkit-scrollbar]:hidden">
+                        {timeList.length > 0 ? (
+                          timeList.map((time) => (
+                            <Button
+                              key={time}
+                              variant={
+                                selectedTime === time ? "default" : "outline"
+                              }
+                              className={`rounded-full font-medium transition-all duration-200 ${
+                                selectedTime === time
+                                  ? "border-purple-500 bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
+                                  : "border-gray-600 bg-gray-800 text-gray-300 hover:border-purple-400/50 hover:bg-gray-700"
+                              }`}
+                              onClick={() => handleTimeSelect(time)}
+                            >
+                              {selectedTime === time && (
+                                <CheckCircle2 className="mr-1 h-4 w-4" />
+                              )}
+                              {time}
+                            </Button>
+                          ))
+                        ) : (
+                          <div className="w-full py-4 text-center">
+                            <p className="text-sm text-gray-400">
+                              Não há horários disponíveis para este dia.
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
 
                   {selectedDate && (
-                    <div className="p-5">
+                    <div className="p-6">
                       <BookingSummary
-                        barbershop={barbershop}
+                        bikeshop={bikeshop}
                         service={service}
                         selectedDate={selectedDate}
                       />
                     </div>
                   )}
-                  <SheetFooter className="mt-5 px-5">
+
+                  <SheetFooter className="mt-5 px-6">
                     <Button
                       onClick={handleCreateBooking}
                       disabled={!selectedDay || !selectedTime}
+                      className="w-full rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:from-green-700 hover:to-emerald-700 hover:shadow-green-500/25 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      Confirmar
+                      <CheckCircle2 className="mr-2 h-5 w-5" />
+                      Confirmar Agendamento
                     </Button>
                   </SheetFooter>
                 </SheetContent>
@@ -288,7 +364,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
         open={signInDialogIsOpen}
         onOpenChange={(open) => setSignInDialogIsOpen(open)}
       >
-        <DialogContent className="w-[90%]">
+        <DialogContent className="w-[90%] border-gray-700/50 bg-gradient-to-br from-gray-900 to-gray-800">
           <SignInDialog />
         </DialogContent>
       </Dialog>

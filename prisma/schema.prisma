@@ -11,8 +11,10 @@ model User {
   id            String    @id @default(cuid())
   name          String?
   email         String    @unique
+  phone         String?       @unique
   emailVerified DateTime?
   image         String?
+  role          UserRole      @default(CUSTOMER)
   accounts      Account[]
   sessions      Session[]
   bookings      Booking[]
@@ -59,36 +61,70 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
-model Barbershop {
-  id          String              @id @default(uuid())
+model BikeShop {
+  id          String          @id @default(uuid())
   name        String
   address     String
   phones      String[]
   description String
   imageUrl    String
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-  services    BarbershopService[]
+  coverUrl    String
+  instagramUrl   String?
+  facebookUrl    String?
+  whatsappUrl String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  services    BikeService[]
+  gallery     Gallery[]
 }
 
-model BarbershopService {
-  id           String     @id @default(uuid())
+model BikeService {
+  id           String   @id @default(uuid())
   name         String
   description  String
   imageUrl     String
-  price        Decimal    @db.Decimal(10, 2)
-  barbershopId String
-  barbershop   Barbershop @relation(fields: [barbershopId], references: [id])
+  price        Decimal  @db.Decimal(10, 2)
+  bikeShopId   String
+  bikeShop     BikeShop @relation(fields: [bikeShopId], references: [id])
   bookings     Booking[]
 }
 
 model Booking {
-  id        String            @id @default(uuid())
+  id        String      @id @default(uuid())
   userId    String
-  user      User              @relation(fields: [userId], references: [id])
+  user      User        @relation(fields: [userId], references: [id])
   serviceId String
-  service   BarbershopService @relation(fields: [serviceId], references: [id])
+  service   BikeService @relation(fields: [serviceId], references: [id])
   date      DateTime
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Gallery {
+  id         String    @id @default(uuid())
+  imageUrl   String
+  caption    String?
+  type       GalleryType @default(GALLERY)
+  mediaType  MediaType   @default(IMAGE) 
+  createdAt  DateTime  @default(now())
+
+  bikeShopId String
+  bikeShop   BikeShop  @relation(fields: [bikeShopId], references: [id])
+}
+
+enum GalleryType {
+  FEATURED
+  GALLERY
+}
+
+// Novo enum para tipo de mídia
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  CUSTOMER
 }

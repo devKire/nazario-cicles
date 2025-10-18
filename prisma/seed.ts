@@ -1,147 +1,603 @@
-const { PrismaClient } = require("@prisma/client");
+const { PrismaClient } = require("@prisma/client")
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
 async function seedDatabase() {
   try {
-    const images = [
-      "https://utfs.io/f/c97a2dc9-cf62-468b-a851-bfd2bdde775f-16p.png",
-      "https://utfs.io/f/45331760-899c-4b4b-910e-e00babb6ed81-16q.png",
-      "https://utfs.io/f/5832df58-cfd7-4b3f-b102-42b7e150ced2-16r.png",
-      "https://utfs.io/f/7e309eaa-d722-465b-b8b6-76217404a3d3-16s.png",
-      "https://utfs.io/f/178da6b6-6f9a-424a-be9d-a2feb476eb36-16t.png",
-      "https://utfs.io/f/2f9278ba-3975-4026-af46-64af78864494-16u.png",
-      "https://utfs.io/f/988646ea-dcb6-4f47-8a03-8d4586b7bc21-16v.png",
-      "https://utfs.io/f/60f24f5c-9ed3-40ba-8c92-0cd1dcd043f9-16w.png",
-      "https://utfs.io/f/f64f1bd4-59ce-4ee3-972d-2399937eeafc-16x.png",
-      "https://utfs.io/f/e995db6d-df96-4658-99f5-11132fd931e1-17j.png",
-      "https://utfs.io/f/3bcf33fc-988a-462b-8b98-b811ee2bbd71-17k.png",
-      "https://utfs.io/f/5788be0e-2307-4bb4-b603-d9dd237950a2-17l.png",
-      "https://utfs.io/f/6b0888f8-b69f-4be7-a13b-52d1c0c9cab2-17m.png",
-      "https://utfs.io/f/ef45effa-415e-416d-8c4a-3221923cd10f-17n.png",
-      "https://utfs.io/f/ef45effa-415e-416d-8c4a-3221923cd10f-17n.png",
-      "https://utfs.io/f/a55f0f39-31a0-4819-8796-538d68cc2a0f-17o.png",
-      "https://utfs.io/f/5c89f046-80cd-4443-89df-211de62b7c2a-17p.png",
-      "https://utfs.io/f/23d9c4f7-8bdb-40e1-99a5-f42271b7404a-17q.png",
-      "https://utfs.io/f/9f0847c2-d0b8-4738-a673-34ac2b9506ec-17r.png",
-      "https://utfs.io/f/07842cfb-7b30-4fdc-accc-719618dfa1f2-17s.png",
-      "https://utfs.io/f/0522fdaf-0357-4213-8f52-1d83c3dcb6cd-18e.png",
-    ];
-    // Nomes criativos para as barbearias
-    const creativeNames = [
-      "Barbearia Vintage",
-      "Corte & Estilo",
-      "Barba & Navalha",
-      "The Dapper Den",
-      "Cabelo & Cia.",
-      "Machado & Tesoura",
-      "Barbearia Elegance",
-      "Aparência Impecável",
-      "Estilo Urbano",
-      "Estilo Clássico",
-    ];
+    // Criar a oficina
+    const bikeShop = await prisma.bikeShop.create({
+      data: {
+        name: "Nazario Cicle's",
+        address:
+          "R. Hamilton José Silveira Machado, 22 - Adhemar Garcia, Joinville - SC, 89230-709",
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0068.jpg",
+        coverUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0019.jpg",
+        phones: ["(47) 97331-387"],
+        instagramUrl: "https://www.instagram.com/nazariocicles",
+        facebookUrl: "https://www.facebook.com/vanderson.nazario.5",
+        whatsappUrl: "https://wa.me/554797331387",
+        description:
+          "Oficina especializada em manutenção e reparo de bicicletas. Trabalhamos com excelência para oferecer o melhor serviço para sua bike, utilizando equipamentos de última geração. Atendemos todos os tipos de bicicletas: mountain bike, speed, urbana e infantil. Qualidade e garantia em todos os serviços.",
+      },
+    })
 
-    // Endereços fictícios para as barbearias
-    const addresses = [
-      "Rua da Barbearia, 123",
-      "Avenida dos Cortes, 456",
-      "Praça da Barba, 789",
-      "Travessa da Navalha, 101",
-      "Alameda dos Estilos, 202",
-      "Estrada do Machado, 303",
-      "Avenida Elegante, 404",
-      "Praça da Aparência, 505",
-      "Rua Urbana, 606",
-      "Avenida Clássica, 707",
-    ];
-
+    // Serviços
     const services = [
       {
-        name: "Corte de Cabelo",
-        description: "Estilo personalizado com as últimas tendências.",
+        name: "Manutenção Completa",
+        description:
+          "Revisão geral da sua bike com check-up de todos os componentes, ajustes e lubrificação.",
+        price: 120.0,
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0021.jpg",
+      },
+      {
+        name: "Regulagem Profissional",
+        description:
+          "Ajustes finos de suspensão, freios e câmbio para máximo desempenho.",
+        price: 80.0,
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0040.jpg",
+      },
+      {
+        name: "Upgrade de Componentes",
+        description:
+          "Modernize sua bike com peças de alta qualidade e tecnologia avançada.",
+        price: 200.0,
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0055.jpg",
+      },
+      {
+        name: "Reparo de Emergência",
+        description:
+          "Serviço rápido para resolver problemas urgentes com agilidade e precisão.",
         price: 60.0,
         imageUrl:
-          "https://utfs.io/f/0ddfbd26-a424-43a0-aaf3-c3f1dc6be6d1-1kgxo7.png",
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0061.jpg",
       },
       {
-        name: "Barba",
-        description: "Modelagem completa para destacar sua masculinidade.",
-        price: 40.0,
+        name: "Manutenção Preventiva",
+        description:
+          "Programa de revisões periódicas para manter sua bike sempre pronta.",
+        price: 90.0,
         imageUrl:
-          "https://utfs.io/f/e6bdffb6-24a9-455b-aba3-903c2c2b5bde-1jo6tu.png",
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0022.jpg",
       },
       {
-        name: "Pézinho",
-        description: "Acabamento perfeito para um visual renovado.",
-        price: 35.0,
-        imageUrl:
-          "https://utfs.io/f/8a457cda-f768-411d-a737-cdb23ca6b9b5-b3pegf.png",
-      },
-      {
-        name: "Sobrancelha",
-        description: "Expressão acentuada com modelagem precisa.",
-        price: 20.0,
-        imageUrl:
-          "https://utfs.io/f/2118f76e-89e4-43e6-87c9-8f157500c333-b0ps0b.png",
-      },
-      {
-        name: "Massagem",
-        description: "Relaxe com uma massagem revigorante.",
+        name: "Consultoria Especializada",
+        description:
+          "Orientação técnica para escolha de peças e melhorias personalizadas.",
         price: 50.0,
         imageUrl:
-          "https://utfs.io/f/c4919193-a675-4c47-9f21-ebd86d1c8e6a-4oen2a.png",
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0015.jpg",
       },
       {
-        name: "Hidratação",
-        description: "Hidratação profunda para cabelo e barba.",
-        price: 25.0,
+        name: "Lavagem e Limpeza Profunda",
+        description:
+          "Higienização completa da bike com produtos específicos que preservam os componentes.",
+        price: 45.0,
         imageUrl:
-          "https://utfs.io/f/8a457cda-f768-411d-a737-cdb23ca6b9b5-b3pegf.png",
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0039.jpg",
       },
-    ];
+      {
+        name: "Troca de Câmaras e Pneus",
+        description:
+          "Substituição de pneus e câmaras para melhor desempenho e segurança.",
+        price: 35.0,
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0064.jpg",
+      },
+    ]
 
-    // Criar 10 barbearias com nomes e endereços fictícios
-    const barbershops = [];
-    for (let i = 0; i < 10; i++) {
-      const name = creativeNames[i];
-      const address = addresses[i];
-      const imageUrl = images[i];
-
-      const barbershop = await prisma.barbershop.create({
+    for (const service of services) {
+      await prisma.bikeService.create({
         data: {
-          name,
-          address,
-          imageUrl: imageUrl,
-          phones: ["(11) 99999-9999", "(11) 99999-9999"],
-          description:
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ac augue ullamcorper, pharetra orci mollis, auctor tellus. Phasellus pharetra erat ac libero efficitur tempus. Donec pretium convallis iaculis. Etiam eu felis sollicitudin, cursus mi vitae, iaculis magna. Nam non erat neque. In hac habitasse platea dictumst. Pellentesque molestie accumsan tellus id laoreet.",
+          ...service,
+          bikeShop: { connect: { id: bikeShop.id } },
         },
-      });
-
-      for (const service of services) {
-        await prisma.barbershopService.create({
-          data: {
-            name: service.name,
-            description: service.description,
-            price: service.price,
-            barbershop: {
-              connect: {
-                id: barbershop.id,
-              },
-            },
-            imageUrl: service.imageUrl,
-          },
-        });
-      }
-
-      barbershops.push(barbershop);
+      })
     }
 
-    // Fechar a conexão com o banco de dados
-    await prisma.$disconnect();
+    const galleryImages = [
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0065.jpg",
+        caption: "Serviço de manutenção profissional",
+        type: "FEATURED",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0063.jpg",
+        caption: "Regulagem de componentes",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0059.jpg",
+        caption: "Manutenção preventiva",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0060.jpg",
+        caption: "Área de trabalho",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0061.jpg",
+        caption: "Ferramentas profissionais",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0062.jpg",
+        caption: "Detalhe do serviço",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/VID-20251017-WA0007.mp4",
+        caption: "Vídeo demonstrativo dos serviços",
+        type: "GALLERY",
+        mediaType: "VIDEO",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0058.jpg",
+        caption: "Bicicleta em revisão",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0054.jpg",
+        caption: "Componentes e peças",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0055.jpg",
+        caption: "Manutenção especializada",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0056.jpg",
+        caption: "Detalhe técnico",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0057.jpg",
+        caption: "Serviço em andamento",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0052.jpg",
+        caption: "Organização da oficina",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0053.jpg",
+        caption: "Ferramentas em uso",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0049.jpg",
+        caption: "Manutenção de transmissão",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0050.jpg",
+        caption: "Serviço de limpeza",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0051.jpg",
+        caption: "Ajustes finos",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0045.jpg",
+        caption: "Oficina completa",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0046.jpg",
+        caption: "Equipamentos profissionais",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0047.jpg",
+        caption: "Detalhe do trabalho",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0044.jpg",
+        caption: "Organização do espaço",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0040.jpg",
+        caption: "Serviço especializado",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0041.jpg",
+        caption: "Manutenção preventiva",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0042.jpg",
+        caption: "Regulagem de componentes",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0043.jpg",
+        caption: "Detalhe técnico",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0039.jpg",
+        caption: "Bicicleta em manutenção",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0037.jpg",
+        caption: "Ferramentas em ação",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0038.jpg",
+        caption: "Serviço profissional",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/VID-20251017-WA0006.mp4",
+        caption: "Processo de manutenção em vídeo",
+        type: "GALLERY",
+        mediaType: "VIDEO",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/VID-20251017-WA0005.mp4",
+        caption: "Demonstração de serviços",
+        type: "GALLERY",
+        mediaType: "VIDEO",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0031.jpg",
+        caption: "Oficina organizada",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0032.jpg",
+        caption: "Trabalho em detalhe",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0033.jpg",
+        caption: "Manutenção completa",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0034.jpg",
+        caption: "Serviço de qualidade",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0035.jpg",
+        caption: "Equipamentos profissionais",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0036.jpg",
+        caption: "Detalhe do serviço",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0027.jpg",
+        caption: "Regulagem precisa",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0028.jpg",
+        caption: "Manutenção especializada",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0029.jpg",
+        caption: "Serviço em andamento",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0030.jpg",
+        caption: "Detalhe técnico",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/VID-20251017-WA0004.mp4",
+        caption: "Vídeo dos serviços",
+        type: "GALLERY",
+        mediaType: "VIDEO",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0026.jpg",
+        caption: "Organização do trabalho",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/VID-20251017-WA0003.mp4",
+        caption: "Processo de manutenção",
+        type: "GALLERY",
+        mediaType: "VIDEO",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0023.jpg",
+        caption: "Ferramentas profissionais",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0024.jpg",
+        caption: "Serviço detalhado",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0025.jpg",
+        caption: "Manutenção completa",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0018.jpg",
+        caption: "Oficina equipada",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0019.jpg",
+        caption: "Trabalho profissional",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0020.jpg",
+        caption: "Serviço especializado",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0021.jpg",
+        caption: "Detalhe do trabalho",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0022.jpg",
+        caption: "Manutenção preventiva",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0016.jpg",
+        caption: "Regulagem de componentes",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0017.jpg",
+        caption: "Serviço em andamento",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0015.jpg",
+        caption: "Ferramentas em uso",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0014.jpg",
+        caption: "Detalhe técnico",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251018-WA0001.jpg",
+        caption: "Serviço completo",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0073.jpg",
+        caption: "Oficina organizada",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0072.jpg",
+        caption: "Oficina organizada",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0074.jpg",
+        caption: "Manutenção profissional",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0075.jpg",
+        caption: "Equipamentos em uso",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0076.jpg",
+        caption: "Serviço detalhado",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0077.jpg",
+        caption: "Trabalho preciso",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0078.jpg",
+        caption: "Manutenção completa",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0070.jpg",
+        caption: "Regulagem de freios",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0071.jpg",
+        caption: "Serviço especializado",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0067.jpg",
+        caption: "Ferramentas profissionais",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0069.jpg",
+        caption: "Serviço de qualidade",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+      {
+        imageUrl:
+          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0064.jpg",
+        caption: "Oficina completa",
+        type: "GALLERY",
+        mediaType: "IMAGE",
+      },
+    ]
+
+    for (const image of galleryImages) {
+      await prisma.gallery.create({
+        data: {
+          ...image,
+          bikeShop: { connect: { id: bikeShop.id } },
+        },
+      })
+    }
+
+    console.log("✅ Oficina única criada com sucesso!")
+    console.log(`🏪 Oficina: ${bikeShop.name}`)
+    console.log(`📍 Endereço: ${bikeShop.address}`)
+    console.log(`🛠️ ${services.length} serviços criados.`)
+    console.log(`🖼️ ${galleryImages.length} imagens da galeria criadas.`)
+
+    await prisma.$disconnect()
   } catch (error) {
-    console.error("Erro ao criar as barbearias:", error);
+    console.error("❌ Erro ao criar a oficina de bicicleta:", error)
   }
 }
 
-seedDatabase();
+seedDatabase()
