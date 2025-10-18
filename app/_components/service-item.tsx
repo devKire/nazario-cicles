@@ -4,13 +4,7 @@ import { BikeShop, BikeService, Booking } from "@prisma/client"
 import Image from "next/image"
 import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "./ui/sheet"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet"
 import { Calendar } from "./ui/calendar"
 import { ptBR } from "date-fns/locale"
 import { useEffect, useMemo, useState } from "react"
@@ -226,136 +220,163 @@ const ServiceItem = ({ service, bikeshop }: ServiceItemProps) => {
                   Agendar
                 </Button>
 
-                <SheetContent className="border-l border-gray-700/50 bg-gradient-to-b from-gray-900 to-gray-800 px-0 sm:max-w-md">
-                  <SheetHeader className="border-b border-gray-700/50 px-4 pb-4 sm:px-6">
-                    <div className="flex items-center gap-2">
-                      <div className="rounded-lg bg-blue-500/10 p-2">
-                        <CalendarIcon className="h-5 w-5 text-blue-400" />
+                <SheetContent
+                  className="flex h-full flex-col border-l border-gray-700/50 bg-gradient-to-b from-gray-900 to-gray-800 p-0 sm:max-w-md"
+                  side="right"
+                  onInteractOutside={(e) => {
+                    // Previne fechar ao clicar fora em mobile
+                    if (window.innerWidth < 640) {
+                      e.preventDefault()
+                    }
+                  }}
+                >
+                  {/* Header com botão de fechar */}
+                  <SheetHeader className="flex-shrink-0 border-b border-gray-700/50 px-4 py-4 sm:px-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="rounded-lg bg-blue-500/10 p-2">
+                          <CalendarIcon className="h-5 w-5 text-blue-400" />
+                        </div>
+                        <SheetTitle className="text-sm text-white sm:text-base">
+                          Fazer Agendamento
+                        </SheetTitle>
                       </div>
-                      <SheetTitle className="text-sm text-white sm:text-base">
-                        Fazer Agendamento
-                      </SheetTitle>
                     </div>
                   </SheetHeader>
 
-                  <div className="border-b border-gray-700/50 py-4 sm:py-6">
-                    <div className="mb-3 px-4 sm:mb-4 sm:px-6">
-                      <div className="flex items-center gap-2 text-sm font-medium text-blue-400">
-                        <Clock className="h-4 w-4" />
-                        Selecione a data
-                      </div>
+                  {/* Área de conteúdo rolável */}
+                  <div className="flex-1 overflow-y-auto">
+                    <div className="space-y-6 py-4 sm:space-y-8 sm:py-6">
+                      {/* Calendário */}
+                      <section className="px-4 sm:px-6">
+                        <div className="mb-4 flex items-center gap-2 text-sm font-medium text-blue-400 sm:mb-6">
+                          <Clock className="h-4 w-4" />
+                          Selecione a data
+                        </div>
+
+                        <div className="rounded-lg border border-gray-700/50 bg-gray-800/50 p-4 backdrop-blur-sm">
+                          <Calendar
+                            mode="single"
+                            locale={ptBR}
+                            selected={selectedDay}
+                            onSelect={handleDateSelect}
+                            fromDate={new Date()}
+                            className="w-full"
+                            classNames={{
+                              root: "w-full max-w-full",
+                              months: "w-full max-w-full",
+                              month: "w-full max-w-full",
+                              table: "w-full max-w-full",
+                              head: "w-full max-w-full",
+                              head_row: "w-full grid grid-cols-7 gap-1",
+                              head_cell:
+                                "text-xs font-normal text-gray-400 py-2 truncate",
+                              tbody: "w-full max-w-full",
+                              row: "w-full grid grid-cols-7 gap-1 py-1",
+                              cell: "text-center min-w-0",
+                              day: "mx-auto w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-xs xs:text-sm rounded-lg transition-all duration-200 hover:bg-gray-700 flex items-center justify-center",
+                              day_selected:
+                                "bg-blue-600 text-white hover:bg-blue-700",
+                              day_today: "bg-gray-700 text-white",
+                              day_outside: "text-gray-500 opacity-50",
+                              day_disabled:
+                                "text-gray-500 opacity-30 cursor-not-allowed",
+                              day_range_middle: "bg-gray-600",
+                              day_hidden: "invisible",
+                              nav: "flex justify-between items-center mb-2 sm:mb-4 px-1",
+                              nav_button:
+                                "h-6 w-6 sm:h-8 sm:w-8 rounded border border-gray-600 bg-gray-700 flex items-center justify-center hover:bg-gray-600 transition-colors",
+                              nav_button_previous: "mr-1 sm:mr-2",
+                              nav_button_next: "ml-1 sm:ml-2",
+                              caption:
+                                "flex justify-center items-center py-1 sm:py-2",
+                              caption_label:
+                                "text-xs sm:text-sm font-semibold text-white",
+                              dropdown:
+                                "bg-gray-800 border-gray-600 text-white text-xs sm:text-sm",
+                            }}
+                          />
+                        </div>
+                      </section>
+
+                      {/* Horários disponíveis */}
+                      {selectedDay && (
+                        <section className="px-4 sm:px-6">
+                          <div className="mb-4 flex items-center gap-2 text-sm font-medium text-purple-400 sm:mb-6">
+                            <Clock className="h-4 w-4" />
+                            Horários disponíveis
+                          </div>
+
+                          <div className="rounded-lg border border-gray-700/50 bg-gray-800/50 p-4 backdrop-blur-sm">
+                            <div className="relative">
+                              <div className="flex gap-2 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                                {timeList.length > 0 ? (
+                                  timeList.map((time) => (
+                                    <Button
+                                      key={time}
+                                      variant={
+                                        selectedTime === time
+                                          ? "default"
+                                          : "outline"
+                                      }
+                                      size="sm"
+                                      className={`flex-shrink-0 rounded-full px-4 font-medium transition-all duration-200 ${
+                                        selectedTime === time
+                                          ? "border-purple-500 bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
+                                          : "border-gray-600 bg-gray-700 text-gray-300 hover:border-purple-400/50 hover:bg-gray-600"
+                                      }`}
+                                      onClick={() => handleTimeSelect(time)}
+                                    >
+                                      {selectedTime === time && (
+                                        <CheckCircle2 className="mr-2 h-3 w-3" />
+                                      )}
+                                      {time}
+                                    </Button>
+                                  ))
+                                ) : (
+                                  <div className="w-full py-4 text-center">
+                                    <Clock className="mx-auto mb-2 h-6 w-6 text-gray-500" />
+                                    <p className="text-sm text-gray-400">
+                                      Não há horários disponíveis para este dia.
+                                    </p>
+                                    <p className="mt-1 text-xs text-gray-500">
+                                      Tente selecionar outra data.
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </section>
+                      )}
+
+                      {/* Resumo do agendamento */}
+                      {selectedDate && (
+                        <section className="px-4 sm:px-6">
+                          <div className="rounded-lg border border-gray-700/50 bg-gray-800/50 p-4 backdrop-blur-sm">
+                            <BookingSummary
+                              bikeshop={bikeshop}
+                              service={service}
+                              selectedDate={selectedDate}
+                            />
+                          </div>
+                        </section>
+                      )}
                     </div>
-                    <Calendar
-                      mode="single"
-                      locale={ptBR}
-                      selected={selectedDay}
-                      onSelect={handleDateSelect}
-                      fromDate={new Date()}
-                      className="px-4 sm:px-6"
-                      styles={{
-                        head_cell: {
-                          width: "100%",
-                          textTransform: "capitalize",
-                          color: "#9CA3AF",
-                          fontSize: "0.75rem",
-                        },
-                        cell: {
-                          width: "100%",
-                        },
-                        button: {
-                          width: "100%",
-                          color: "#E5E7EB",
-                          borderRadius: "6px",
-                          transition: "all 0.2s",
-                          fontSize: "0.875rem",
-                        },
-                        day: {
-                          borderRadius: "6px",
-                        },
-                        nav_button_previous: {
-                          width: "28px",
-                          height: "28px",
-                          color: "#9CA3AF",
-                        },
-                        nav_button_next: {
-                          width: "28px",
-                          height: "28px",
-                          color: "#9CA3AF",
-                        },
-                        caption: {
-                          textTransform: "capitalize",
-                          color: "#E5E7EB",
-                          fontSize: "0.9rem",
-                          fontWeight: "600",
-                        },
-                        caption_label: {
-                          color: "#E5E7EB",
-                        },
-                      }}
-                    />
                   </div>
 
-                  {selectedDay && (
-                    <div className="border-b border-gray-700/50 py-4 sm:py-6">
-                      <div className="mb-3 px-4 sm:mb-4 sm:px-6">
-                        <div className="flex items-center gap-2 text-sm font-medium text-purple-400">
-                          <Clock className="h-4 w-4" />
-                          Horários disponíveis
-                        </div>
-                      </div>
-                      <div className="flex gap-2 overflow-x-auto px-4 pb-2 sm:px-6 [&::-webkit-scrollbar]:hidden">
-                        {timeList.length > 0 ? (
-                          timeList.map((time) => (
-                            <Button
-                              key={time}
-                              variant={
-                                selectedTime === time ? "default" : "outline"
-                              }
-                              size="sm"
-                              className={`min-w-[70px] rounded-full font-medium transition-all duration-200 ${
-                                selectedTime === time
-                                  ? "border-purple-500 bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
-                                  : "border-gray-600 bg-gray-800 text-gray-300 hover:border-purple-400/50 hover:bg-gray-700"
-                              }`}
-                              onClick={() => handleTimeSelect(time)}
-                            >
-                              {selectedTime === time && (
-                                <CheckCircle2 className="mr-1 h-3 w-3" />
-                              )}
-                              {time}
-                            </Button>
-                          ))
-                        ) : (
-                          <div className="w-full py-3 text-center">
-                            <p className="text-xs text-gray-400 sm:text-sm">
-                              Não há horários disponíveis para este dia.
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedDate && (
-                    <div className="p-4 sm:p-6">
-                      <BookingSummary
-                        bikeshop={bikeshop}
-                        service={service}
-                        selectedDate={selectedDate}
-                      />
-                    </div>
-                  )}
-
-                  <SheetFooter className="mt-4 px-4 sm:mt-5 sm:px-6">
+                  {/* Botão de confirmação fixo */}
+                  <div className="flex-shrink-0 border-t border-gray-700/50 bg-gray-900/80 p-4 backdrop-blur-sm sm:p-6">
                     <Button
                       onClick={handleCreateBooking}
                       disabled={!selectedDay || !selectedTime}
-                      className="w-full rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:from-green-700 hover:to-emerald-700 hover:shadow-green-500/25 disabled:cursor-not-allowed disabled:opacity-50 sm:text-base"
+                      size="lg"
+                      className="w-full rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 py-4 text-base font-semibold text-white shadow-lg transition-all duration-200 hover:from-green-700 hover:to-emerald-700 hover:shadow-green-500/25 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                      <CheckCircle2 className="mr-2 h-5 w-5" />
                       Confirmar Agendamento
                     </Button>
-                  </SheetFooter>
+                  </div>
                 </SheetContent>
               </Sheet>
             </div>
