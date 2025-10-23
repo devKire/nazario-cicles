@@ -7,98 +7,43 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  phone         String?       @unique
-  emailVerified DateTime?
-  image         String?
-  role          UserRole      @default(CUSTOMER)
-  accounts      Account[]
-  sessions      Session[]
-  bookings      Booking[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-}
-
-model Account {
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@id([provider, providerAccountId])
-}
-
-model Session {
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model VerificationToken {
-  identifier String
-  token      String
-  expires    DateTime
-
-  @@id([identifier, token])
-}
-
-model BikeShop {
-  id          String          @id @default(uuid())
-  name        String
-  address     String
-  phones      String[]
-  description String
-  imageUrl    String
-  coverUrl    String
-  instagramUrl   String?
-  facebookUrl    String?
-  whatsappUrl String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  services    BikeService[]
+model LandingPage {
+  id             String   @id @default(uuid())
+  name           String
+  description    String
+  avatarImageUrl String
+  coverImageUrl  String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
   gallery     Gallery[]
+  services    Service[]
+  contactInfo    ContactInfo?
 }
 
-model BikeService {
+model ContactInfo {
+  id            String  @id @default(uuid())
+  email         String
+  phone         String?
+  whatsappLink  String?
+  instagramLink String?
+  facebookLink  String?
+  behanceLink  String?
+
+  // Relations
+  landingpage   LandingPage @relation(fields: [landingpageId], references: [id], onDelete: Cascade)
+  landingpageId String      @unique
+}
+
+
+model Service {
   id           String   @id @default(uuid())
   name         String
   description  String
   imageUrl     String
-  price        Decimal  @db.Decimal(10, 2)
-  bikeShopId   String
-  bikeShop     BikeShop @relation(fields: [bikeShopId], references: [id])
-  bookings     Booking[]
+  landingPageId   String
+  landingPage     LandingPage @relation(fields: [landingPageId], references: [id])
 }
 
-model Booking {
-  id        String      @id @default(uuid())
-  userId    String
-  user      User        @relation(fields: [userId], references: [id])
-  serviceId String
-  service   BikeService @relation(fields: [serviceId], references: [id])
-  date      DateTime
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-}
 
 model Gallery {
   id         String    @id @default(uuid())
@@ -108,8 +53,8 @@ model Gallery {
   mediaType  MediaType   @default(IMAGE) 
   createdAt  DateTime  @default(now())
 
-  bikeShopId String
-  bikeShop   BikeShop  @relation(fields: [bikeShopId], references: [id])
+  landingPageId String
+  landingPage   LandingPage  @relation(fields: [landingPageId], references: [id])
 }
 
 enum GalleryType {

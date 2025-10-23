@@ -1,221 +1,389 @@
-import React from "react"
-import { ArrowUpRight, Wrench, Star, Clock, ShieldCheck } from "lucide-react"
+"use client"
+
+import { Service } from "@prisma/client"
+import { backOut, easeOut, motion } from "framer-motion"
+import { useInView } from "framer-motion"
+import { useRef, useState } from "react"
 import Image from "next/image"
-import { BikeService } from "@prisma/client"
-import Link from "next/link"
+import { SwipeCards, CardData } from "./ui/swipe-cards"
+import { Lightbulb } from "lucide-react"
 
 interface ServicesProps {
-  popularServices?: (BikeService & {
-    bikeShop: {
-      id: string
-      name: string
-      imageUrl: string
-      whatsappUrl?: string | null
-    }
-  })[]
+  services: Service[]
 }
 
-const Services = ({ popularServices = [] }: ServicesProps) => {
-  // Função para obter o WhatsApp da primeira oficina ou um número padrão
-  const getWhatsAppUrl = () => {
-    const firstShop = popularServices[0]?.bikeShop
-    if (firstShop?.whatsappUrl) {
-      return firstShop.whatsappUrl
+const Services = ({ services }: ServicesProps) => {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true })
+  const [hoveredCard, setHoveredCard] = useState<number | null>(null)
+  const [cardsKey, setCardsKey] = useState(0) // Key para forçar reinício dos cards
+  const [showResetMessage, setShowResetMessage] = useState(false)
+
+  // Converter serviços para o formato dos swipe cards
+  const swipeCardsData: CardData[] = services.map((service, index) => ({
+    id: index,
+    url: service.imageUrl || "/default-service-image.jpg",
+    name: service.name,
+    bio: service.description,
+    location: "Serviço Profissional",
+    age: index + 1, // Usando age como número do serviço
+    interests: ["3D", "Arquitetura", "Design"], // Interesses padrão ou personalizáveis
+  }))
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        duration: 0.8,
+      },
+    },
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 50, scale: 0.9 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.6,
+        ease: easeOut,
+      },
+    },
+  }
+
+  const cardHoverVariants = {
+    initial: { y: 0, scale: 1 },
+    hover: {
+      y: -8,
+      scale: 1.02,
+      transition: {
+        duration: 0.3,
+        ease: easeOut,
+      },
+    },
+  }
+
+  const iconVariants = {
+    hidden: { scale: 0, rotate: -180 },
+    visible: {
+      scale: 1,
+      rotate: 0,
+      transition: {
+        duration: 0.5,
+        ease: backOut,
+      },
+    },
+  }
+
+  const imageVariants = {
+    hidden: { opacity: 0, scale: 1.1 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.6,
+        ease: easeOut,
+      },
+    },
+    hover: {
+      scale: 1.05,
+      transition: {
+        duration: 0.4,
+        ease: easeOut,
+      },
+    },
+  }
+
+  // Ícones futuristas para cada serviço
+  const serviceIcons = ["🚀", "🎨", "🏗️", "👁️", "🔄", "📱", "💎", "🌟"]
+
+  // Handler para quando um card é swiped
+  const handleSwipe = (id: number, direction: "left" | "right") => {
+    console.log(`Card ${id} swiped ${direction}`)
+    // Aqui você pode adicionar lógica adicional quando um card é swiped
+  }
+
+  // Handler para quando todos os cards acabam
+  const handleAllCardsSwiped = () => {
+    setShowResetMessage(true)
+
+    // Reiniciar os cards após 2 segundos
+    setTimeout(() => {
+      setCardsKey((prev) => prev + 1) // Muda a key para forçar reinício
+      setShowResetMessage(false)
+    }, 2000)
+  }
+
+  // Componente SwipeCards modificado para detectar quando acabam os cards
+  const CustomSwipeCards = ({
+    data,
+    onSwipe,
+  }: {
+    data: CardData[]
+    // eslint-disable-next-line no-unused-vars
+    onSwipe?: (id: number, direction: "left" | "right") => void
+  }) => {
+    const [remainingCards, setRemainingCards] = useState(data.length)
+
+    const handleCardSwipe = (id: number, direction: "left" | "right") => {
+      setRemainingCards((prev) => prev - 1)
+      onSwipe?.(id, direction)
+
+      // Se era o último card, chama o handler
+      if (remainingCards === 1) {
+        handleAllCardsSwiped()
+      }
     }
 
-    // Fallback para um número padrão ou mensagem de erro
-    const defaultPhone = "5548999999999" // Substitua pelo número padrão
-    const defaultMessage =
-      "Olá! Gostaria de falar com um especialista sobre serviços para minha bicicleta."
-    return `https://wa.me/${defaultPhone}?text=${encodeURIComponent(defaultMessage)}`
+    return (
+      <SwipeCards
+        key={cardsKey} // Key muda quando queremos reiniciar
+        data={data}
+        onSwipe={handleCardSwipe}
+        className="h-[500px]"
+      />
+    )
   }
 
   return (
-    <section id="services" className="bg-gradient-to-br py-20">
-      <div className="mx-auto max-w-7xl px-6">
-        {/* Header */}
-        <div className="mb-16 text-center">
-          <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-orange-500">
-            <Wrench className="h-8 w-8 text-white" />
+    <section
+      id="services"
+      className="overflow-hidden bg-black py-24 text-white"
+    >
+      <div className="container mx-auto px-4">
+        {/* Header com efeito futurista */}
+        <motion.div
+          ref={ref}
+          className="mb-20 text-center"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+          transition={{ duration: 0.8 }}
+        >
+          <motion.h2
+            className="font-bbh relative z-10 mb-3 bg-gradient-to-r from-teal-400 via-cyan-600 to-teal-800 bg-clip-text text-2xl font-bold tracking-wide text-transparent sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl"
+            animate={{
+              backgroundPosition: ["0%", "100%", "0%"],
+            }}
+            transition={{
+              duration: 5,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+            style={{
+              backgroundSize: "200% 100%",
+            }}
+          >
+            Nossos Servicos
+          </motion.h2>
+
+          <motion.div
+            className="mx-auto mt-4 h-px w-72 bg-gradient-to-r from-transparent via-teal-500 to-transparent"
+            initial={{ width: 0 }}
+            animate={isInView ? { width: 200 } : { width: 0 }}
+            transition={{ duration: 1, delay: 0.3 }}
+          />
+
+          <motion.p
+            className="mx-auto mt-6 max-w-2xl text-xl text-gray-300"
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+          >
+            Soluções completas em visualização arquitetônica 3D para transformar
+            seus projetos em experiências visuais imersivas
+          </motion.p>
+        </motion.div>
+
+        {/* Swipe Cards Container */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          className="flex flex-col items-center justify-center"
+        >
+          {/* Versão Mobile - Swipe Cards */}
+          <div className="block w-full md:hidden">
+            <CustomSwipeCards data={swipeCardsData} onSwipe={handleSwipe} />
+
+            {/* Mensagem de reinício */}
+            {showResetMessage &&
+              (() => {
+                console.log("🔄 Reiniciando animação...")
+                return null
+              })()}
           </div>
-          <h2 className="mb-6 text-4xl font-bold text-white md:text-5xl">
-            Nossos{" "}
-            <span className="bg-gradient-to-r from-blue-400 to-orange-400 bg-clip-text text-transparent">
-              Serviços
-            </span>
-          </h2>
-          <p className="mx-auto max-w-3xl text-xl leading-relaxed text-slate-300">
-            Oferecemos uma gama completa de serviços especializados para manter
-            sua bicicleta em perfeito estado e maximizar sua experiência de
-            pedalada.
-          </p>
-        </div>
 
-        {/* Services Grid - Layout Melhorado */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {popularServices.map((service) => (
-            <div
-              key={service.id}
-              className="group relative overflow-hidden rounded-3xl border border-slate-600/50 bg-slate-800/50 shadow-lg backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:border-blue-500/50 hover:bg-slate-800/70 hover:shadow-blue-500/20"
-            >
-              {/* Background Effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-orange-500/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
-
-              {/* Service Image - DESTAQUE PRINCIPAL */}
-              <div className="relative h-48 w-full overflow-hidden">
-                <Image
-                  src={service.imageUrl}
-                  alt={service.name}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+          {/* Versão Desktop - Grid de Cards */}
+          <div className="hidden w-full gap-6 px-4 md:grid md:grid-cols-2 lg:grid-cols-3">
+            {services.map((service, index) => (
+              <motion.div
+                key={service.id}
+                className="group relative h-full"
+                variants={itemVariants}
+                onMouseEnter={() => setHoveredCard(index)}
+                onMouseLeave={() => setHoveredCard(null)}
+              >
+                {/* Efeito de brilho no fundo */}
+                <motion.div
+                  className="absolute -inset-2 rounded-2xl bg-gradient-to-r from-teal-500/20 to-cyan-500/20 opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-100"
+                  variants={cardHoverVariants}
                 />
-                {/* Overlay gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent"></div>
 
-                {/* Rating no canto esquerdo */}
-                <div className="absolute left-4 top-4 flex items-center gap-1 rounded-full bg-black/50 px-3 py-1 backdrop-blur-sm">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm font-semibold text-white">5.0</span>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="relative space-y-4 p-6">
-                {/* Title */}
-                <h3 className="text-xl font-bold text-white transition-colors group-hover:text-blue-400">
-                  {service.name}
-                </h3>
-
-                {/* Description */}
-                <p className="line-clamp-2 text-sm leading-relaxed text-slate-300">
-                  {service.description}
-                </p>
-
-                {/* Features */}
-                <div className="flex items-center gap-4 text-sm text-slate-400">
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    <span>1-2 dias</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <ShieldCheck className="h-4 w-4" />
-                    <span>Garantia</span>
-                  </div>
-                </div>
-
-                {/* Price and Shop Info */}
-                <div className="flex items-center justify-between border-t border-slate-600/50 pt-4">
-                  <div className="flex items-center gap-3">
-                    <div className="relative h-8 w-8">
-                      <Image
-                        src={service.bikeShop.imageUrl}
-                        alt={service.bikeShop.name}
-                        fill
-                        className="rounded-full border border-slate-600 object-cover"
-                      />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-white">
-                        {service.bikeShop.name}
-                      </p>
-                      <p className="text-xs text-slate-400">Oficina</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-blue-400">
-                      R$ {service.price.toFixed(2)}
-                    </p>
-                    <p className="text-xs text-slate-400">a partir de</p>
-                  </div>
-                </div>
-
-                {/* CTA Button */}
-                <Link
-                  href={`/bikeshops/${service.bikeShop.id}?service=${service.id}`}
-                  className="group/btn flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-500/20 to-orange-500/20 px-4 py-3 text-blue-300 transition-all duration-300 hover:from-blue-500/30 hover:to-orange-500/30 hover:text-white hover:shadow-lg"
+                {/* Card principal */}
+                <motion.div
+                  className="relative z-10 h-full overflow-hidden rounded-xl border border-teal-500/30 bg-gradient-to-br from-gray-900/80 to-black/80 backdrop-blur-sm"
+                  variants={cardHoverVariants}
+                  initial="initial"
+                  whileHover="hover"
                 >
-                  <span className="font-semibold">Agendar Serviço</span>
-                  <ArrowUpRight
-                    size={16}
-                    className="transition-transform duration-300 group-hover/btn:-translate-y-0.5 group-hover/btn:translate-x-0.5"
-                  />
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Enhanced CTA Section */}
-        <div className="mt-20">
-          <div className="mx-auto max-w-4xl rounded-3xl border border-slate-600/50 bg-gradient-to-br from-slate-800/50 to-slate-900/50 p-12 shadow-2xl backdrop-blur-sm">
-            <div className="text-center">
-              <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-orange-500">
-                <Wrench className="h-10 w-10 text-white" />
-              </div>
-
-              <h3 className="mb-4 text-3xl font-bold text-white">
-                Não encontrou o que procura?
-              </h3>
-
-              <p className="mb-8 text-lg leading-relaxed text-slate-300">
-                Temos soluções personalizadas para todas as suas necessidades.
-                Nossa equipe especializada está pronta para ajudar com serviços
-                sob medida para sua bicicleta.
-              </p>
-
-              <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-                <a
-                  href={getWhatsAppUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-green-600 to-green-500 px-8 py-4 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:from-green-700 hover:to-green-600 hover:shadow-green-500/25"
-                >
-                  <span>Falar com Especialista</span>
-                  <svg
-                    className="h-5 w-5"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
+                  {/* Container da imagem */}
+                  <motion.div
+                    className="relative h-48 w-full overflow-hidden"
+                    variants={imageVariants}
+                    initial="hidden"
+                    animate="visible"
+                    whileHover="hover"
                   >
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893c0-3.189-1.248-6.189-3.515-8.464" />
-                  </svg>
-                </a>
-              </div>
+                    {service.imageUrl ? (
+                      <Image
+                        src={service.imageUrl}
+                        alt={service.name}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-teal-500/10 to-cyan-500/10">
+                        <span className="text-4xl">
+                          {serviceIcons[index] || "✨"}
+                        </span>
+                      </div>
+                    )}
 
-              {/* Additional Info */}
-              <div className="mt-8 grid grid-cols-1 gap-6 border-t border-slate-600/50 pt-8 sm:grid-cols-3">
-                <div className="text-center">
-                  <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/20">
-                    <Clock className="h-6 w-6 text-blue-400" />
-                  </div>
-                  <h4 className="font-semibold text-white">
-                    Atendimento Rápido
-                  </h4>
-                  <p className="text-sm text-slate-400">
-                    Agendamento em minutos
-                  </p>
-                </div>
+                    {/* Overlay gradiente na imagem */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-                <div className="text-center">
-                  <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-orange-500/20">
-                    <ShieldCheck className="h-6 w-6 text-orange-400" />
-                  </div>
-                  <h4 className="font-semibold text-white">Garantia Total</h4>
-                  <p className="text-sm text-slate-400">
-                    90 dias em todos os serviços
-                  </p>
-                </div>
+                    {/* Número do serviço sobre a imagem */}
+                    <div className="absolute left-4 top-4">
+                      <motion.div
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-teal-500 to-cyan-400 text-sm font-bold text-black"
+                        variants={iconVariants}
+                      >
+                        {index + 1}
+                      </motion.div>
+                    </div>
 
-                <div className="text-center">
-                  <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-purple-500/20">
-                    <Star className="h-6 w-6 text-purple-400" />
+                    {/* Ícone flutuante no hover */}
+                    <motion.div
+                      className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm"
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={
+                        hoveredCard === index
+                          ? { scale: 1, opacity: 1 }
+                          : { scale: 0, opacity: 0 }
+                      }
+                      transition={{ duration: 0.3 }}
+                    >
+                      <span className="text-lg">
+                        {serviceIcons[index] || "✨"}
+                      </span>
+                    </motion.div>
+                  </motion.div>
+
+                  {/* Conteúdo do serviço */}
+                  <div className="p-6">
+                    <motion.h3
+                      className="mb-3 text-xl font-semibold text-white"
+                      whileHover={{ color: "#2DD4BF" }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {service.name}
+                    </motion.h3>
+
+                    <motion.p
+                      className="leading-relaxed text-gray-300"
+                      whileHover={{ color: "#E5E5E5" }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {service.description}
+                    </motion.p>
                   </div>
-                  <h4 className="font-semibold text-white">Avaliação 5★</h4>
-                  <p className="text-sm text-slate-400">Clientes satisfeitos</p>
-                </div>
-              </div>
-            </div>
+
+                  {/* Linha decorativa inferior */}
+                  <motion.div
+                    className="absolute bottom-0 left-1/2 h-1 w-0 -translate-x-1/2 bg-gradient-to-r from-teal-400 to-cyan-400 transition-all duration-500 group-hover:w-3/4"
+                    initial={false}
+                  />
+
+                  {/* Efeito de borda luminosa no hover */}
+                  <motion.div
+                    className="absolute inset-0 rounded-xl border-2 border-transparent bg-gradient-to-r from-teal-500 to-cyan-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    style={{
+                      mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                      WebkitMask:
+                        "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                      maskComposite: "subtract",
+                      WebkitMaskComposite: "subtract",
+                      padding: "2px",
+                    }}
+                  />
+                </motion.div>
+              </motion.div>
+            ))}
           </div>
-        </div>
+        </motion.div>
+
+        {/* Instruções para Mobile */}
+        <motion.div
+          className="mt-8 text-center md:hidden"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+        >
+          <p className="text-sm text-gray-400">
+            Arraste para os lados para navegar entre os serviços
+          </p>
+          <p className="mt-2 text-xs text-gray-500">
+            Os cards reiniciam automaticamente quando acabam
+          </p>
+        </motion.div>
+
+        {/* CTA Secundário - Mais direto */}
+        <motion.div
+          className="mt-12 text-center"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.5, delay: 0.8 }}
+        >
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-4 py-2">
+            <Lightbulb className="h-4 w-4 text-cyan-400" />
+            <span className="text-sm font-medium text-cyan-300">
+              Precisa de ajuda especializada?
+            </span>
+          </div>
+
+          <p className="mx-auto mb-6 max-w-md text-gray-400">
+            Vamos conversar sobre suas ideias e encontrar a melhor solução
+          </p>
+
+          <motion.a
+            href="#contact"
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-teal-600 to-cyan-600 px-8 py-3 font-semibold text-white shadow-lg transition-all hover:from-teal-500 hover:to-cyan-500 hover:shadow-cyan-500/25"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <span>Falar com Especialista</span>
+            <motion.span
+              animate={{ x: [0, 5, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              →
+            </motion.span>
+          </motion.a>
+        </motion.div>
       </div>
     </section>
   )

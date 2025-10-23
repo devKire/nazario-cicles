@@ -1,261 +1,387 @@
-import React from "react"
-import { Users, Award, Clock, Heart, Target, Zap, MapPin } from "lucide-react"
+"use client"
 
-interface Gallery {
-  id: string
-  imageUrl: string
-  caption?: string | null
-  type: string
-}
-
-interface BikeShop {
-  id: string
-  name: string
-  description: string
-  imageUrl: string
-  coverUrl: string
-  address: string
-  phones: string[]
-  instagramUrl?: string | null
-  facebookUrl?: string | null
-  whatsappUrl?: string | null
-  createdAt: Date
-  updatedAt: Date
-  gallery: Gallery[]
-  services?: any[]
-}
-
+import { LandingPage } from "@prisma/client"
+import { easeOut, motion } from "framer-motion"
+import { useInView } from "framer-motion"
+import { useRef } from "react"
 interface AboutProps {
-  bikeShop: BikeShop | null
+  landingPage: LandingPage
 }
 
-const About = ({ bikeShop }: AboutProps) => {
-  if (!bikeShop) {
-    return null
+const About = ({ landingPage }: AboutProps) => {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true })
+
+  // Variantes de animação
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        duration: 0.8,
+      },
+    },
   }
 
-  const calculateStats = () => {
-    const yearsOfExperience = Math.floor(
-      (new Date().getTime() - bikeShop.createdAt.getTime()) /
-        (365 * 24 * 60 * 60 * 1000),
-    )
-
-    const estimatedRepairs = yearsOfExperience * 300
-    const customerSatisfaction = "98%"
-    const serviceWarranty = "24h"
-
-    return [
-      {
-        number: `${yearsOfExperience}+`,
-        label: "Anos de Experiência",
-        icon: <Clock className="h-6 w-6" />,
+  const itemVariants = {
+    hidden: { opacity: 0, x: -50 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.6,
+        ease: easeOut,
       },
-      {
-        number: `${estimatedRepairs}+`,
-        label: "Bikes Reparadas",
-        icon: <Award className="h-6 w-6" />,
-      },
-      {
-        number: customerSatisfaction,
-        label: "Clientes Satisfeitos",
-        icon: <Heart className="h-6 w-6" />,
-      },
-      {
-        number: serviceWarranty,
-        label: "Garantia de Serviço",
-        icon: <Zap className="h-6 w-6" />,
-      },
-    ]
+    },
   }
 
-  const stats = calculateStats()
+  const imageVariants = {
+    hidden: { opacity: 0, x: 50, scale: 0.9 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      scale: 1,
+      transition: {
+        duration: 0.8,
+        ease: easeOut,
+      },
+    },
+  }
 
-  const values = [
-    {
-      icon: <Target className="h-8 w-8" />,
-      title: "Excelência",
-      description:
-        "Buscamos sempre a perfeição em cada serviço realizado, garantindo qualidade superior.",
+  const statVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: easeOut,
+      },
     },
-    {
-      icon: <Heart className="h-8 w-8" />,
-      title: "Paixão",
-      description:
-        "Somos apaixonados por ciclismo e essa paixão se reflete em tudo que fazemos.",
-    },
-    {
-      icon: <Users className="h-8 w-8" />,
-      title: "Confiança",
-      description:
-        "Construímos relacionamentos duradouros baseados na confiança e transparência.",
-    },
-  ]
-
-  const featuredImage =
-    bikeShop.gallery.find(
-      (img) =>
-        img.imageUrl ===
-        "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0023.jpg",
-    ) || bikeShop.gallery[0]
+  }
 
   return (
-    <section id="about" className="bg-gradient-to-br py-20">
-      <div className="mx-auto max-w-7xl px-6">
-        {/* Header */}
-        <div className="mb-16 text-center">
-          <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-orange-500">
-            <Users className="h-8 w-8 text-white" />
-          </div>
-          <h2 className="mb-6 text-4xl font-bold text-white md:text-5xl">
-            Sobre a{" "}
-            <span className="bg-gradient-to-r from-blue-400 to-orange-400 bg-clip-text text-transparent">
-              {bikeShop.name}
-            </span>
-          </h2>
-          <p className="mx-auto max-w-3xl text-xl leading-relaxed text-slate-300">
-            {bikeShop.description}
-          </p>
-        </div>
-
-        {/* Story Section */}
-        <div className="mb-20 grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
-          <div className="space-y-6">
-            <div className="inline-flex items-center space-x-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 backdrop-blur-sm">
-              <span className="text-sm font-medium text-blue-300">
-                Nossa História
-              </span>
-            </div>
-            <h3 className="text-3xl font-bold text-white">
-              Tradição e Qualidade em{" "}
-              <span className="bg-gradient-to-r from-blue-400 to-orange-400 bg-clip-text text-transparent">
-                Cada Serviço
-              </span>
-            </h3>
-            <div className="space-y-4 leading-relaxed text-slate-300">
-              <p>
-                A {bikeShop.name} nasceu da paixão pelo ciclismo e da vontade de
-                oferecer serviços de qualidade para ciclistas de todos os
-                níveis.
-              </p>
-              <p>
-                Localizada em {bikeShop.address}, temos orgulho em fazer parte
-                da comunidade ciclística há{" "}
-                {Math.floor(
-                  (new Date().getTime() - bikeShop.createdAt.getTime()) /
-                    (365 * 24 * 60 * 60 * 1000),
-                )}{" "}
-                anos.
-              </p>
-              <p>
-                Oferecemos uma gama completa de serviços especializados, desde
-                manutenção básica até reparos complexos, sempre com atendimento
-                personalizado e técnicos qualificados.
-              </p>
-            </div>
-          </div>
-
-          <div className="relative">
-            <div className="relative z-10 overflow-hidden rounded-3xl shadow-2xl">
-              <img
-                src={
-                  featuredImage?.imageUrl ||
-                  bikeShop.imageUrl ||
-                  "/default-bike-shop.jpg"
-                }
-                alt={`Oficina ${bikeShop.name}`}
-                className="h-80 w-full object-cover transition-transform duration-500 hover:scale-105"
+    <section
+      id="about"
+      className="relative bg-black px-4 py-12 text-white sm:px-6 sm:py-16 lg:py-20"
+    >
+      <div className="mx-auto w-full max-w-7xl">
+        <motion.div
+          ref={ref}
+          className="grid items-center gap-6 lg:gap-8 xl:grid-cols-2 xl:gap-12"
+          variants={containerVariants}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+        >
+          {/* Conteúdo Textual - Direita no desktop */}
+          <motion.div variants={itemVariants} className="xl:order-1">
+            <motion.div className="relative mb-6 flex items-center overflow-hidden overflow-visible sm:mb-8">
+              {/* Imagem decorativa - ajustada para mobile */}
+              <motion.img
+                src="https://h4mwwihke9yjbcdr.public.blob.vercel-storage.com/insertion/elemento.png"
+                alt="Insertion 3D Studio"
+                className="absolute -left-14 z-0 h-52 w-52"
+                animate={{ rotate: -360 }} // Rotação completa anti-horária
+                transition={{
+                  duration: 20,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+                whileHover={{ scale: 1.1 }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
-            </div>
-            <div className="absolute -bottom-4 -right-4 -z-10 h-full w-full rounded-3xl bg-gradient-to-br from-blue-500/20 to-orange-500/20"></div>
-          </div>
-        </div>
 
-        {/* Stats */}
-        <div className="mb-20 grid grid-cols-2 gap-6 md:grid-cols-4">
-          {stats.map((stat, index) => (
-            <div
-              key={index}
-              className="rounded-2xl border border-slate-600/50 bg-slate-800/50 p-6 text-center backdrop-blur-sm transition-all duration-300 hover:border-blue-500/30 hover:bg-slate-800/70"
-            >
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-orange-500">
-                <div className="text-white">{stat.icon}</div>
-              </div>
-              <div className="mb-2 text-2xl font-bold text-white md:text-3xl">
-                {stat.number}
-              </div>
-              <div className="text-sm font-medium text-slate-300">
-                {stat.label}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Values */}
-        <div className="mb-20">
-          <div className="text-center">
-            <div className="inline-flex items-center space-x-2 rounded-full border border-orange-500/20 bg-orange-500/10 px-4 py-2 backdrop-blur-sm">
-              <span className="text-sm font-medium text-orange-300">
-                Nossos Valores
-              </span>
-            </div>
-            <h3 className="mt-4 text-3xl font-bold text-white">
-              O Que Nos{" "}
-              <span className="bg-gradient-to-r from-blue-400 to-orange-400 bg-clip-text text-transparent">
-                Move
-              </span>
-            </h3>
-          </div>
-          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-            {values.map((value, index) => (
-              <div
-                key={index}
-                className="rounded-2xl border border-slate-600/50 bg-slate-800/50 p-8 backdrop-blur-sm transition-all duration-300 hover:border-blue-500/30 hover:bg-slate-800/70"
-              >
-                <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-orange-500">
-                  <div className="text-white">{value.icon}</div>
-                </div>
-                <h4 className="mb-4 text-center text-xl font-bold text-white">
-                  {value.title}
-                </h4>
-                <p className="text-center leading-relaxed text-slate-300">
-                  {value.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* CTA */}
-        <div className="text-center">
-          <div className="mx-auto max-w-2xl rounded-3xl border border-slate-600/50 bg-slate-800/50 p-8 shadow-2xl backdrop-blur-sm">
-            <div className="mb-6 flex justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-orange-500">
-                <MapPin className="h-8 w-8 text-white" />
-              </div>
-            </div>
-            <h3 className="mb-4 text-2xl font-bold text-white">
-              Venha nos Conhecer!
-            </h3>
-            <p className="mb-6 text-slate-300">
-              Visite nossa loja e conheça nossa equipe pessoalmente
-            </p>
-            <div className="mb-6 space-y-3">
-              <div className="flex items-center justify-center space-x-2 text-slate-300">
-                <MapPin className="h-4 w-4" />
-                <span className="font-medium">{bikeShop.address}</span>
-              </div>
-              {bikeShop.phones.map((phone, index) => (
-                <p key={index} className="text-slate-300">
-                  {phone}
-                </p>
+              {/* Efeito de anéis orbitais horizontais */}
+              {[...Array(3)].map((_, i) => (
+                <motion.div
+                  key={`ring-${i}`}
+                  className="absolute -left-14 z-40 h-52 w-52 rounded-full border border-teal-400/30"
+                  style={{
+                    borderWidth: "1px",
+                  }}
+                  animate={{
+                    rotateX: i === 0 ? [0, 360] : [0, -360],
+                    scale: [1, 1.2, 1],
+                    opacity: [0.3, 0.6, 0.3],
+                  }}
+                  transition={{
+                    duration: 20 + i * 2,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                />
               ))}
+
+              <motion.h2 className="font-bbh text-md relative z-10 mb-3 ml-32 bg-gradient-to-r bg-clip-text sm:text-4xl md:text-4xl lg:text-4xl xl:text-4xl">
+                Sobre o Insertion 3D Studio
+              </motion.h2>
+            </motion.div>
+
+            <motion.div
+              className="mx-auto mb-4 h-px bg-gradient-to-r from-transparent via-teal-500 to-transparent"
+              initial={{ width: 0 }}
+              animate={isInView ? { width: "100%" } : { width: 0 }}
+              transition={{ duration: 1, delay: 0.5 }}
+            />
+
+            <motion.p
+              className="mb-4 text-sm leading-relaxed text-gray-300 sm:mb-6 sm:text-base md:text-lg lg:text-xl"
+              variants={itemVariants}
+            >
+              Somos um estúdio de visualização arquitetônica 3D desenvolvido na
+              América do Sul, especializado em transformar projetos
+              arquitetônicos em experiências visuais impactantes.
+            </motion.p>
+
+            <motion.p
+              className="mb-6 text-sm leading-relaxed text-gray-300 sm:mb-8 sm:text-base md:text-lg lg:text-xl"
+              variants={itemVariants}
+            >
+              Combinamos tecnologia de ponta com criatividade para criar imagens
+              fotorrealistas, tours virtuais e animações que elevam a
+              apresentação de seus projetos.
+            </motion.p>
+
+            {/* Estatísticas */}
+            <motion.div
+              className="mb-6 grid grid-cols-2 gap-4 sm:mb-8 sm:gap-6"
+              variants={containerVariants}
+            >
+              <motion.div
+                className="group cursor-pointer text-center"
+                variants={statVariants}
+                whileHover={{ scale: 1.05 }}
+              >
+                <div className="relative">
+                  <motion.div
+                    className="mb-1 bg-gradient-to-r bg-clip-text text-xl font-bold text-teal-600 sm:mb-2 sm:text-2xl md:text-3xl"
+                    animate={{
+                      textShadow: [
+                        "0 0 0px rgba(0, 255, 255, 0)",
+                        "0 0 20px rgba(0, 255, 255, 0.5)",
+                        "0 0 0px rgba(0, 255, 255, 0)",
+                      ],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  >
+                    1000+
+                  </motion.div>
+                </div>
+
+                <div className="text-xs text-gray-400 transition-colors duration-300 group-hover:text-teal-600 sm:text-sm md:text-base">
+                  Projetos Entregues
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="group cursor-pointer text-center"
+                variants={statVariants}
+                whileHover={{ scale: 1.05 }}
+              >
+                <div className="relative">
+                  <motion.div
+                    className="mb-1 bg-gradient-to-r bg-clip-text text-xl font-bold text-teal-600 sm:mb-2 sm:text-2xl md:text-3xl"
+                    animate={{
+                      textShadow: [
+                        "0 0 0px rgba(0, 255, 255, 0)",
+                        "0 0 20px rgba(0, 255, 255, 0.5)",
+                        "0 0 0px rgba(0, 255, 255, 0)",
+                      ],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: 0.5,
+                    }}
+                  >
+                    10+
+                  </motion.div>
+                </div>
+
+                <div className="text-xs text-gray-400 transition-colors duration-300 group-hover:text-teal-600 sm:text-sm md:text-base">
+                  Anos de Experiência
+                </div>
+              </motion.div>
+            </motion.div>
+
+            {/* Elementos decorativos futuristas */}
+            <motion.div className="flex gap-3 sm:gap-4" variants={itemVariants}>
+              {[...Array(2)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="h-1 flex-1 rounded-full bg-gradient-to-r from-teal-600 to-teal-800"
+                  initial={{ scaleX: 0 }}
+                  animate={isInView ? { scaleX: 1 } : { scaleX: 0 }}
+                  transition={{ duration: 0.8, delay: 0.8 + i * 0.2 }}
+                />
+              ))}
+            </motion.div>
+          </motion.div>
+
+          {/* Imagem principal - Esquerda no desktop, inferior no mobile */}
+          <motion.div className="relative xl:order-2" variants={imageVariants}>
+            {/* Efeito de grid holográfico de fundo */}
+            <motion.div
+              className="absolute inset-0 rounded-lg opacity-20"
+              style={{
+                backgroundImage: `
+        linear-gradient(rgba(20, 184, 166, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(20, 184, 166, 0.1) 1px, transparent 1px)
+      `,
+                backgroundSize: "20px 20px",
+              }}
+              animate={{
+                backgroundPosition: ["0px 0px", "20px 20px"],
+              }}
+              transition={{
+                duration: 20,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+            />
+
+            {/* Efeito de brilho centralizado com partículas de energia */}
+            <motion.div
+              className="absolute inset-0 rounded-xl bg-gradient-to-r from-teal-400/10 via-cyan-400/5 to-teal-600/10 blur-xl"
+              animate={{
+                opacity: [0.2, 0.4, 0.2],
+                scale: [1, 1.05, 1],
+              }}
+              transition={{
+                duration: 6,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+
+            {/* Container da imagem com borda gradiente sutil */}
+            <div className="relative overflow-hidden rounded-lg sm:rounded-xl">
+              {/* Overlay com gradiente teal minimalista */}
+              <div className="absolute inset-0 z-10 bg-gradient-to-br from-teal-900/10 via-transparent to-cyan-900/10"></div>
+
+              {/* Borda luminosa sutil */}
+              <motion.div
+                className="absolute inset-0 rounded-lg border border-teal-400/30"
+                animate={{
+                  opacity: [0.3, 0.6, 0.3],
+                  boxShadow: [
+                    "0 0 20px rgba(20, 184, 166, 0.3)",
+                    "0 0 40px rgba(20, 184, 166, 0.5)",
+                    "0 0 20px rgba(20, 184, 166, 0.3)",
+                  ],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+
+              <motion.img
+                src={landingPage.coverImageUrl}
+                alt="Insertion 3D Studio"
+                className="relative z-0 w-full rounded-lg object-cover"
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+              />
             </div>
-            <button className="rounded-2xl bg-gradient-to-r from-blue-500 to-orange-500 px-8 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:from-blue-600 hover:to-orange-600 hover:shadow-xl">
-              Como Chegar
-            </button>
-          </div>
-        </div>
+
+            {/* Sistema de partículas futuristas */}
+
+            {/* Partículas de energia flutuantes */}
+            {[...Array(8)].map((_, i) => (
+              <motion.div
+                key={`energy-${i}`}
+                className="absolute z-20 h-1 w-1 rounded-full bg-gradient-to-r from-teal-400 to-cyan-400"
+                style={{
+                  left: `${10 + i * 12}%`,
+                  top: `${8 + i * 12}%`,
+                  filter: "blur(0.5px)",
+                }}
+                animate={{
+                  y: [0, -25, 0],
+                  x: [0, Math.sin(i) * 10, 0],
+                  opacity: [0, 1, 0],
+                  scale: [0.5, 1.2, 0.5],
+                }}
+                transition={{
+                  duration: 4 + i * 0.3,
+                  repeat: Infinity,
+                  delay: i * 0.2,
+                  ease: "easeInOut",
+                }}
+              />
+            ))}
+
+            {/* Partículas de conexão - linhas de energia */}
+            {[...Array(4)].map((_, i) => (
+              <motion.div
+                key={`connection-${i}`}
+                className="absolute z-10 h-px bg-gradient-to-r from-transparent via-teal-400/50 to-transparent"
+                style={{
+                  width: "30%",
+                  left: `${15 + i * 20}%`,
+                  top: `${20 + i * 15}%`,
+                }}
+                animate={{
+                  opacity: [0, 0.8, 0],
+                  scaleX: [0.5, 1, 0.5],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  delay: i * 0.5,
+                  ease: "easeInOut",
+                }}
+              />
+            ))}
+
+            {/* Partículas orbitais */}
+            {[...Array(3)].map((_, i) => (
+              <motion.div
+                key={`orbital-${i}`}
+                className="absolute z-20 h-2 w-2 rounded-full bg-cyan-400/60"
+                style={{
+                  left: "50%",
+                  top: "50%",
+                  x: "-50%",
+                  y: "-50%",
+                }}
+                animate={{
+                  rotate: [0, 360],
+                  x: [0, Math.cos(i * 120) * 80, 0],
+                  y: [0, Math.sin(i * 120) * 80, 0],
+                  opacity: [0.3, 0.8, 0.3],
+                }}
+                transition={{
+                  duration: 8 + i * 2,
+                  repeat: Infinity,
+                  delay: i * 1,
+                  ease: "linear",
+                }}
+              />
+            ))}
+
+            {/* Efeito de pulso central */}
+            <motion.div
+              className="absolute inset-0 z-10 rounded-lg border border-teal-400/20"
+              animate={{
+                scale: [1, 1.1, 1],
+                opacity: [0, 0.5, 0],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeOut",
+              }}
+            />
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   )

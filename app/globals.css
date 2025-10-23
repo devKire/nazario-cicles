@@ -38,12 +38,24 @@
 
 @layer base {
   * {
-    @apply border-border antialiased;
+    @apply font-montserrat border-border antialiased;
   }
   html {
     @apply h-full;
   }
   body {
     @apply h-full bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .font-bbh {
+    font-family: "BBH Sans Bartle", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  .heading-custom {
+    @apply font-bbh relative z-10 mb-3 ml-32 bg-gradient-to-r bg-clip-text text-base sm:text-4xl md:text-4xl lg:text-4xl xl:text-4xl;
   }
 }

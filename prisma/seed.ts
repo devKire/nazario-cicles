@@ -2,602 +2,305 @@ const { PrismaClient } = require("@prisma/client")
 
 const prisma = new PrismaClient()
 
-async function seedDatabase() {
-  try {
-    // Criar a oficina
-    const bikeShop = await prisma.bikeShop.create({
-      data: {
-        name: "Nazario Cicle's",
-        address:
-          "R. Hamilton José Silveira Machado, 22 - Adhemar Garcia, Joinville - SC, 89230-709",
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0068.jpg",
-        coverUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0019.jpg",
-        phones: ["(47) 97331-387"],
-        instagramUrl: "https://www.instagram.com/nazariocicles",
-        facebookUrl: "https://www.facebook.com/vanderson.nazario.5",
-        whatsappUrl: "https://wa.me/554797331387",
-        description:
-          "Oficina especializada em manutenção e reparo de bicicletas. Trabalhamos com excelência para oferecer o melhor serviço para sua bike, utilizando equipamentos de última geração. Atendemos todos os tipos de bicicletas: mountain bike, speed, urbana e infantil. Qualidade e garantia em todos os serviços.",
-      },
-    })
+const main = async () => {
+  await prisma.$transaction(
+    async (tx: any) => {
+      // Limpar dados existentes
+      await tx.contactInfo.deleteMany()
+      await tx.gallery.deleteMany()
+      await tx.service.deleteMany()
+      await tx.landingPage.deleteMany()
 
-    // Serviços
-    const services = [
-      {
-        name: "Manutenção Completa",
-        description:
-          "Revisão geral da sua bike com check-up de todos os componentes, ajustes e lubrificação.",
-        price: 120.0,
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0021.jpg",
-      },
-      {
-        name: "Regulagem Profissional",
-        description:
-          "Ajustes finos de suspensão, freios e câmbio para máximo desempenho.",
-        price: 80.0,
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0040.jpg",
-      },
-      {
-        name: "Upgrade de Componentes",
-        description:
-          "Modernize sua bike com peças de alta qualidade e tecnologia avançada.",
-        price: 200.0,
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0055.jpg",
-      },
-      {
-        name: "Reparo de Emergência",
-        description:
-          "Serviço rápido para resolver problemas urgentes com agilidade e precisão.",
-        price: 60.0,
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0061.jpg",
-      },
-      {
-        name: "Manutenção Preventiva",
-        description:
-          "Programa de revisões periódicas para manter sua bike sempre pronta.",
-        price: 90.0,
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0022.jpg",
-      },
-      {
-        name: "Consultoria Especializada",
-        description:
-          "Orientação técnica para escolha de peças e melhorias personalizadas.",
-        price: 50.0,
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0015.jpg",
-      },
-      {
-        name: "Lavagem e Limpeza Profunda",
-        description:
-          "Higienização completa da bike com produtos específicos que preservam os componentes.",
-        price: 45.0,
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0039.jpg",
-      },
-      {
-        name: "Troca de Câmaras e Pneus",
-        description:
-          "Substituição de pneus e câmaras para melhor desempenho e segurança.",
-        price: 35.0,
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0064.jpg",
-      },
-    ]
+      console.log("🧹 Dados existentes limpos.")
 
-    for (const service of services) {
-      await prisma.bikeService.create({
+      // Landing Page principal
+      const landingPage = await tx.landingPage.create({
         data: {
-          ...service,
-          bikeShop: { connect: { id: bikeShop.id } },
+          name: "Insertion 3D Studio",
+          description:
+            "Insertion 3D Studio é um estúdio especializado em visualização arquitetônica e criação de conteúdo 3D para o setor imobiliário. Oferecemos serviços de alta qualidade para ajudar incorporadoras, arquitetos e designers a apresentar seus projetos de forma impactante e realista.",
+          avatarImageUrl:
+            "https://h4mwwihke9yjbcdr.public.blob.vercel-storage.com/insertion/insertionlogopng.png",
+          coverImageUrl:
+            "https://h4mwwihke9yjbcdr.public.blob.vercel-storage.com/insertion/insertion.jpg",
         },
       })
-    }
 
-    const galleryImages = [
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0065.jpg",
-        caption: "Serviço de manutenção profissional",
-        type: "FEATURED",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0063.jpg",
-        caption: "Regulagem de componentes",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0059.jpg",
-        caption: "Manutenção preventiva",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0060.jpg",
-        caption: "Área de trabalho",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0061.jpg",
-        caption: "Ferramentas profissionais",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0062.jpg",
-        caption: "Detalhe do serviço",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/VID-20251017-WA0007.mp4",
-        caption: "Vídeo demonstrativo dos serviços",
-        type: "GALLERY",
-        mediaType: "VIDEO",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0058.jpg",
-        caption: "Bicicleta em revisão",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0054.jpg",
-        caption: "Componentes e peças",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0055.jpg",
-        caption: "Manutenção especializada",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0056.jpg",
-        caption: "Detalhe técnico",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0057.jpg",
-        caption: "Serviço em andamento",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0052.jpg",
-        caption: "Organização da oficina",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0053.jpg",
-        caption: "Ferramentas em uso",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0049.jpg",
-        caption: "Manutenção de transmissão",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0050.jpg",
-        caption: "Serviço de limpeza",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0051.jpg",
-        caption: "Ajustes finos",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0045.jpg",
-        caption: "Oficina completa",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0046.jpg",
-        caption: "Equipamentos profissionais",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0047.jpg",
-        caption: "Detalhe do trabalho",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0044.jpg",
-        caption: "Organização do espaço",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0040.jpg",
-        caption: "Serviço especializado",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0041.jpg",
-        caption: "Manutenção preventiva",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0042.jpg",
-        caption: "Regulagem de componentes",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0043.jpg",
-        caption: "Detalhe técnico",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0039.jpg",
-        caption: "Bicicleta em manutenção",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0037.jpg",
-        caption: "Ferramentas em ação",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0038.jpg",
-        caption: "Serviço profissional",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/VID-20251017-WA0006.mp4",
-        caption: "Processo de manutenção em vídeo",
-        type: "GALLERY",
-        mediaType: "VIDEO",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/VID-20251017-WA0005.mp4",
-        caption: "Demonstração de serviços",
-        type: "GALLERY",
-        mediaType: "VIDEO",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0031.jpg",
-        caption: "Oficina organizada",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0032.jpg",
-        caption: "Trabalho em detalhe",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0033.jpg",
-        caption: "Manutenção completa",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0034.jpg",
-        caption: "Serviço de qualidade",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0035.jpg",
-        caption: "Equipamentos profissionais",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0036.jpg",
-        caption: "Detalhe do serviço",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0027.jpg",
-        caption: "Regulagem precisa",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0028.jpg",
-        caption: "Manutenção especializada",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0029.jpg",
-        caption: "Serviço em andamento",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0030.jpg",
-        caption: "Detalhe técnico",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/VID-20251017-WA0004.mp4",
-        caption: "Vídeo dos serviços",
-        type: "GALLERY",
-        mediaType: "VIDEO",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0026.jpg",
-        caption: "Organização do trabalho",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/VID-20251017-WA0003.mp4",
-        caption: "Processo de manutenção",
-        type: "GALLERY",
-        mediaType: "VIDEO",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0023.jpg",
-        caption: "Ferramentas profissionais",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0024.jpg",
-        caption: "Serviço detalhado",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0025.jpg",
-        caption: "Manutenção completa",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0018.jpg",
-        caption: "Oficina equipada",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0019.jpg",
-        caption: "Trabalho profissional",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0020.jpg",
-        caption: "Serviço especializado",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0021.jpg",
-        caption: "Detalhe do trabalho",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0022.jpg",
-        caption: "Manutenção preventiva",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0016.jpg",
-        caption: "Regulagem de componentes",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0017.jpg",
-        caption: "Serviço em andamento",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0015.jpg",
-        caption: "Ferramentas em uso",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0014.jpg",
-        caption: "Detalhe técnico",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251018-WA0001.jpg",
-        caption: "Serviço completo",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0073.jpg",
-        caption: "Oficina organizada",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0072.jpg",
-        caption: "Oficina organizada",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0074.jpg",
-        caption: "Manutenção profissional",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0075.jpg",
-        caption: "Equipamentos em uso",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0076.jpg",
-        caption: "Serviço detalhado",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0077.jpg",
-        caption: "Trabalho preciso",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0078.jpg",
-        caption: "Manutenção completa",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0070.jpg",
-        caption: "Regulagem de freios",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0071.jpg",
-        caption: "Serviço especializado",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0067.jpg",
-        caption: "Ferramentas profissionais",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0069.jpg",
-        caption: "Serviço de qualidade",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-      {
-        imageUrl:
-          "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0064.jpg",
-        caption: "Oficina completa",
-        type: "GALLERY",
-        mediaType: "IMAGE",
-      },
-    ]
-
-    for (const image of galleryImages) {
-      await prisma.gallery.create({
+      // Contatos
+      await tx.contactInfo.create({
         data: {
-          ...image,
-          bikeShop: { connect: { id: bikeShop.id } },
+          email: "contato@insertion3dstudio.com",
+          phone: "(47) 9137-8628",
+          whatsappLink: "https://wa.me/554791378628",
+          instagramLink:
+            "https://www.instagram.com/insertion3d?igsh=MXRveXNtNzl2azUzNQ%3D%3D",
+          facebookLink: "https://www.facebook.com/Insertion3d",
+          behanceLink: "https://www.behance.net/insertion",
+          landingpageId: landingPage.id,
         },
       })
-    }
 
-    console.log("✅ Oficina única criada com sucesso!")
-    console.log(`🏪 Oficina: ${bikeShop.name}`)
-    console.log(`📍 Endereço: ${bikeShop.address}`)
-    console.log(`🛠️ ${services.length} serviços criados.`)
-    console.log(`🖼️ ${galleryImages.length} imagens da galeria criadas.`)
+      // Serviços com imagens do Pexels
+      const services = [
+        {
+          name: "Imagens para Lançamentos Imobiliários",
+          description:
+            "Criação de imagens 3D realistas para lançamentos de empreendimentos, mostrando ambientes internos e externos com alto nível de detalhe.",
+          imageUrl:
+            "https://images.pexels.com/photos/28729467/pexels-photo-28729467.jpeg",
+          landingPageId: landingPage.id,
+        },
+        {
+          name: "Materiais para Divulgação",
+          description:
+            "Desenvolvimento de conteúdo para redes sociais e campanhas de marketing com identidade visual consistente.",
+          imageUrl:
+            "https://images.pexels.com/photos/269077/pexels-photo-269077.jpeg",
+          landingPageId: landingPage.id,
+        },
+        {
+          name: "Design de Fachada",
+          description:
+            "Projeto e visualização 3D de fachadas arquitetônicas residenciais e comerciais, com foco em estética e realismo.",
+          imageUrl:
+            "https://images.pexels.com/photos/323775/pexels-photo-323775.jpeg",
+          landingPageId: landingPage.id,
+        },
+        {
+          name: "Tour Virtual 360°",
+          description:
+            "Criação de experiências imersivas e interativas para apresentações de empreendimentos imobiliários.",
+          imageUrl:
+            "https://images.pexels.com/photos/7031402/pexels-photo-7031402.jpeg",
+          landingPageId: landingPage.id,
+        },
+        {
+          name: "Visualização Arquitetônica",
+          description:
+            "Renderizações de alta fidelidade para interiores, exteriores e paisagismo.",
+          imageUrl:
+            "https://images.pexels.com/photos/1571459/pexels-photo-1571459.jpeg",
+          landingPageId: landingPage.id,
+        },
+        {
+          name: "Animação Arquitetônica",
+          description:
+            "Animações 3D que destacam cada detalhe do projeto, ideais para apresentações e campanhas.",
+          imageUrl:
+            "https://images.pexels.com/photos/28456458/pexels-photo-28456458.jpeg",
+          landingPageId: landingPage.id,
+        },
+        {
+          name: "Maquetes Eletrônicas",
+          description:
+            "Modelos tridimensionais precisos e detalhados para aprovação e apresentação de projetos.",
+          imageUrl:
+            "https://images.pexels.com/photos/1115804/pexels-photo-1115804.jpeg",
+          landingPageId: landingPage.id,
+        },
+        {
+          name: "Consultoria em Visualização",
+          description:
+            "Aconselhamento técnico e criativo sobre estratégias de visualização e apresentação de projetos.",
+          imageUrl:
+            "https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg",
+          landingPageId: landingPage.id,
+        },
+      ]
 
-    await prisma.$disconnect()
-  } catch (error) {
-    console.error("❌ Erro ao criar a oficina de bicicleta:", error)
-  }
+      for (const service of services) {
+        await tx.service.create({ data: service })
+      }
+
+      // Galeria com imagens do Pexels
+      const galleryImages = [
+        {
+          imageUrl:
+            "https://images.pexels.com/photos/323772/pexels-photo-323772.jpeg",
+          caption: "Renderização de projeto residencial moderno",
+          type: "FEATURED",
+          mediaType: "IMAGE",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg",
+          caption: "Visualização de fachada comercial contemporânea",
+          type: "GALLERY",
+          mediaType: "IMAGE",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://images.pexels.com/photos/813692/pexels-photo-813692.jpeg",
+          caption: "Interior sofisticado com iluminação realista",
+          type: "GALLERY",
+          mediaType: "IMAGE",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://images.pexels.com/photos/1029599/pexels-photo-1029599.jpeg",
+          caption: "Sala de estar renderizada em alta definição",
+          type: "GALLERY",
+          mediaType: "IMAGE",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://h4mwwihke9yjbcdr.public.blob.vercel-storage.com/insertion/video1.mp4",
+          caption: "Vídeo de tour virtual por apartamento moderno",
+          type: "GALLERY",
+          mediaType: "VIDEO",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://images.pexels.com/photos/6585765/pexels-photo-6585765.jpeg",
+          caption: "Projeto de interiores com textura realista",
+          type: "GALLERY",
+          mediaType: "IMAGE",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg",
+          caption: "Visualização de fachada comercial contemporânea",
+          type: "GALLERY",
+          mediaType: "IMAGE",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://images.pexels.com/photos/813692/pexels-photo-813692.jpeg",
+          caption: "Interior sofisticado com iluminação realista",
+          type: "GALLERY",
+          mediaType: "IMAGE",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://images.pexels.com/photos/1029599/pexels-photo-1029599.jpeg",
+          caption: "Sala de estar renderizada em alta definição",
+          type: "GALLERY",
+          mediaType: "IMAGE",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://h4mwwihke9yjbcdr.public.blob.vercel-storage.com/insertion/video2.mp4",
+          caption: "Animação arquitetônica de empreendimento residencial",
+          type: "GALLERY",
+          mediaType: "VIDEO",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://images.pexels.com/photos/276583/pexels-photo-276583.jpeg",
+          caption: "Renderização noturna com iluminação cênica",
+          type: "GALLERY",
+          mediaType: "IMAGE",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://images.pexels.com/photos/276583/pexels-photo-276583.jpeg",
+          caption: "Renderização noturna com iluminação cênica",
+          type: "GALLERY",
+          mediaType: "IMAGE",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://images.pexels.com/photos/382297/pexels-photo-382297.jpeg",
+          caption: "Detalhes de modelagem arquitetônica em 3D",
+          type: "GALLERY",
+          mediaType: "IMAGE",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg",
+          caption: "Fachada moderna com integração paisagística",
+          type: "FEATURED",
+          mediaType: "IMAGE",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://h4mwwihke9yjbcdr.public.blob.vercel-storage.com/insertion/video1.mp4",
+          caption: "Vídeo de apresentação de design de fachada",
+          type: "GALLERY",
+          mediaType: "VIDEO",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://images.pexels.com/photos/382297/pexels-photo-382297.jpeg",
+          caption: "Detalhes de modelagem arquitetônica em 3D",
+          type: "GALLERY",
+          mediaType: "IMAGE",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg",
+          caption: "Fachada moderna com integração paisagística",
+          type: "FEATURED",
+          mediaType: "IMAGE",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://images.pexels.com/photos/382297/pexels-photo-382297.jpeg",
+          caption: "Detalhes de modelagem arquitetônica em 3D",
+          type: "GALLERY",
+          mediaType: "IMAGE",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg",
+          caption: "Fachada moderna com integração paisagística",
+          type: "FEATURED",
+          mediaType: "IMAGE",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://images.pexels.com/photos/382297/pexels-photo-382297.jpeg",
+          caption: "Detalhes de modelagem arquitetônica em 3D",
+          type: "GALLERY",
+          mediaType: "IMAGE",
+          landingPageId: landingPage.id,
+        },
+        {
+          imageUrl:
+            "https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg",
+          caption: "Fachada moderna com integração paisagística",
+          type: "FEATURED",
+          mediaType: "IMAGE",
+          landingPageId: landingPage.id,
+        },
+      ]
+
+      for (const image of galleryImages) {
+        await tx.gallery.create({ data: image })
+      }
+
+      console.log("✅ Insertion 3D Studio - dados criados com sucesso!")
+    },
+    { timeout: 20000 },
+  )
+
+  console.log("📱 Seed de dados concluído com sucesso! 🎉")
 }
 
-seedDatabase()
+main()
+  .catch((e) => {
+    console.error("Erro ao executar o seed:", e)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })
