@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     siteName: "Nazario Cicles",
     images: [
       {
-        url: "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0068.jpg",
+        url: "https://otycnlvsqpjeaeywtzix.supabase.co/storage/v1/object/public/nazariocicles/IMG-20251017-WA0068.jpg",
         width: 1200,
         height: 630,
         alt: "Nazario Cicles - Oficina Especializada em Bicicletas",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     type: "website",
   },
   icons: {
-    icon: "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0068.jpg",
+    icon: "https://otycnlvsqpjeaeywtzix.supabase.co/storage/v1/object/public/nazariocicles/IMG-20251017-WA0068.jpg",
   },
 }
 

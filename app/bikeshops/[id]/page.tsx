@@ -51,7 +51,7 @@ const BikeShopPage = async ({ params }: BikeShopPageProps) => {
             bikeshop?.gallery.find(
               (media) =>
                 media.imageUrl ===
-                "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0075.jpg",
+                "https://otycnlvsqpjeaeywtzix.supabase.co/storage/v1/object/public/nazariocicles/IMG-20251017-WA0075.jpg",
             )?.imageUrl || ""
           }
           fill

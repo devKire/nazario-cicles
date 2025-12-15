@@ -95,7 +95,7 @@ const About = ({ bikeShop }: AboutProps) => {
     bikeShop.gallery.find(
       (img) =>
         img.imageUrl ===
-        "https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0023.jpg",
+        "https://otycnlvsqpjeaeywtzix.supabase.co/storage/v1/object/public/nazariocicles/IMG-20251017-WA0023.jpg",
     ) || bikeShop.gallery[0]
 
   return (

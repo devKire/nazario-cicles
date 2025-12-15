@@ -233,7 +233,7 @@ const Home = async () => {
                 <div className="relative h-80 w-full lg:h-full">
                   <Image
                     alt="Agende os melhores serviços para sua bike"
-                    src="https://qmpdo1utase5f4gf.public.blob.vercel-storage.com/IMG-20251017-WA0072.jpg"
+                    src="https://otycnlvsqpjeaeywtzix.supabase.co/storage/v1/object/public/nazariocicles/IMG-20251017-WA0072.jpg"
                     fill
                     className="object-cover"
                     priority
